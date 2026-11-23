@@ -1,0 +1,1371 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><title>Controle de Alunos</title><meta name="theme-color" content="#1f64bd"></head><body>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+:root {
+  /* Layout: cabeçalho com marca da escola e status; duas abas. Dashboards abre com "Hoje ao vivo"; Preencher é a chamada rápida (uma linha por horário, salva sozinha) */
+  --bg: #eef2f7;
+  --surface: #ffffff;
+  --surface-2: #f4f6fb;
+  --line: #e1e6ef;
+  --ink: #121a26;
+  --muted: #5b6a7e;
+  --accent: #2a78d6;
+  --accent-text: #1c5cab;
+  --accent-soft: rgba(42, 120, 214, .12);
+  --btn: #1f64bd;
+  --btn-ink: #ffffff;
+  --ok: #15845a;
+  --ok-soft: #dff4ea;
+  --rep: #a96300;
+  --rep-soft: #fcefd6;
+  --bad: #c9342f;
+  --bad-soft: #fde5e4;
+  --shadow: 0 1px 2px rgba(18, 26, 38, .06), 0 6px 18px rgba(18, 26, 38, .05);
+  --font-ui: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e131a; --surface: #161d27; --surface-2: #1c2531; --line: #28323f;
+    --ink: #e7ecf3; --muted: #93a1b5;
+    --accent: #3987e5; --accent-text: #86b6ef; --accent-soft: rgba(57, 135, 229, .2);
+    --btn: #6da7ec; --btn-ink: #0b1018;
+    --ok: #3fd096; --ok-soft: rgba(63, 208, 150, .14);
+    --rep: #f2b84b; --rep-soft: rgba(242, 184, 75, .14);
+    --bad: #ff807b; --bad-soft: rgba(255, 128, 123, .14);
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 18px rgba(0, 0, 0, .25);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e131a; --surface: #161d27; --surface-2: #1c2531; --line: #28323f;
+  --ink: #e7ecf3; --muted: #93a1b5;
+  --accent: #3987e5; --accent-text: #86b6ef; --accent-soft: rgba(57, 135, 229, .2);
+  --btn: #6da7ec; --btn-ink: #0b1018;
+  --ok: #3fd096; --ok-soft: rgba(63, 208, 150, .14);
+  --rep: #f2b84b; --rep-soft: rgba(242, 184, 75, .14);
+  --bad: #ff807b; --bad-soft: rgba(255, 128, 123, .14);
+  --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 18px rgba(0, 0, 0, .25);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 400 14px/1.45 var(--font-ui);
+  padding-block: 20px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.app { max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+h1, h2, h3 { margin: 0; font-family: var(--font-display); text-wrap: balance; }
+h1 { font-size: 26px; font-weight: 700; letter-spacing: -.01em; line-height: 1.1; }
+h2 { font-size: 20px; font-weight: 600; line-height: 1.2; }
+h3 { font-size: 16px; font-weight: 600; line-height: 1.25; }
+p { margin: 0; }
+.sub { color: var(--muted); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.brand img { height: 44px; max-width: 160px; width: auto; object-fit: contain; border-radius: 8px; }
+.eyebrow { color: var(--accent-text); font: 600 11px var(--font-ui); text-transform: uppercase; letter-spacing: .08em; }
+.topright { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.conn { display: inline-flex; align-items: center; gap: 7px; padding: 5px 11px; border-radius: 99px; background: var(--surface); border: 1px solid var(--line); color: var(--muted); font: 500 12px var(--font-ui); }
+.conn i { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+.conn.on i { background: var(--ok); }
+.conn.warn i { background: var(--rep); }
+.conn.bad i { background: var(--bad); }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: 38px; padding: 0 14px; border: 1px solid var(--line); border-radius: 10px;
+  background: var(--surface); color: var(--ink); font: 500 13px var(--font-ui); cursor: pointer;
+}
+.btn:hover { background: var(--accent-soft); border-color: var(--accent); }
+.btn:disabled { opacity: .5; cursor: default; }
+.btn.primary { background: var(--btn); border-color: var(--btn); color: var(--btn-ink); font-weight: 600; }
+.btn.primary:hover { filter: brightness(1.08); background: var(--btn); }
+.btn.big { min-height: 48px; padding: 0 22px; font-size: 15px; border-radius: 12px; }
+.btn.danger { color: var(--bad); }
+.btn.danger:hover { background: var(--bad-soft); border-color: var(--bad); }
+.btn.armed, .btn.armed:hover { background: var(--bad); border-color: var(--bad); color: #fff; }
+.btn.icon { width: 38px; padding: 0; font-size: 20px; line-height: 1; }
+.btn.sm { min-height: 32px; padding: 0 11px; font-size: 12px; border-radius: 8px; }
+
+.tabs { display: flex; gap: 4px; padding: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; align-self: flex-start; max-width: 100%; }
+.tab { position: relative; display: inline-flex; align-items: center; gap: 8px; padding: 9px 20px; border: 0; border-radius: 10px; background: transparent; color: var(--muted); font: 600 14px var(--font-ui); cursor: pointer; }
+.tab:hover { background: var(--surface-2); color: var(--ink); }
+.tab[aria-selected="true"] { background: var(--btn); color: var(--btn-ink); }
+.badge { min-width: 20px; padding: 0 6px; border-radius: 99px; background: var(--bad); color: #fff; font: 700 11px/20px var(--font-ui); text-align: center; }
+
+.card { min-width: 0; padding: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); }
+.card.empty { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding: 24px; }
+.view { display: flex; flex-direction: column; gap: 16px; }
+.view[hidden] { display: none; }
+
+.rangebar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; }
+.seg { display: flex; flex-wrap: wrap; gap: 4px; padding: 3px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+.seg button { min-height: 32px; padding: 0 13px; border: 0; border-radius: 9px; background: transparent; color: var(--muted); font: 600 13px var(--font-ui); cursor: pointer; }
+.seg button:hover { background: var(--surface-2); color: var(--ink); }
+.seg button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent-text); }
+.rangelabel { color: var(--muted); font-size: 13px; }
+.banner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 11px 14px; border-radius: 12px; background: var(--rep-soft); color: var(--ink); }
+
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(168px, 1fr)); gap: 12px; }
+.kpi { min-width: 0; padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 4px; }
+.kpi.hero { background: var(--accent-soft); border-color: transparent; }
+.kl { display: flex; align-items: center; gap: 7px; color: var(--muted); font: 600 11px var(--font-ui); text-transform: uppercase; letter-spacing: .06em; }
+.kv { font: 600 32px/1.1 var(--font-display); font-variant-numeric: tabular-nums; }
+.kd { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 6px; font: 600 12px var(--font-ui); color: var(--muted); }
+.kd.good { color: var(--ok); } .kd.bad { color: var(--bad); }
+.kd span { color: var(--muted); font-weight: 400; }
+.km { color: var(--muted); font-size: 12px; }
+.dotc { flex: none; width: 8px; height: 8px; border-radius: 50%; }
+.c-a { background: var(--muted); } .c-p { background: var(--ok); } .c-r { background: var(--rep); } .c-f { background: var(--bad); } .c-x { background: var(--accent); }
+
+.alerts { display: flex; flex-direction: column; gap: 8px; }
+.alert { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-radius: 12px; background: var(--surface-2); }
+.alert .ic { flex: none; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font: 700 13px var(--font-ui); }
+.alert.warn .ic { background: var(--rep-soft); color: var(--rep); }
+.alert.bad .ic { background: var(--bad-soft); color: var(--bad); }
+.alert.ok .ic { background: var(--ok-soft); color: var(--ok); }
+.alert .tx { min-width: 0; flex: 1; }
+.alert b { font-weight: 600; }
+.alert .dt { color: var(--muted); font-size: 12px; }
+
+.live { display: flex; flex-direction: column; gap: 12px; }
+.lhead { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; }
+.ltiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 8px; }
+.ltile { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); text-align: left; cursor: pointer; font: 500 12px var(--font-ui); min-width: 0; }
+.ltile:hover { border-color: var(--accent); }
+.ltile.now { border-color: var(--btn); background: var(--accent-soft); }
+.ltile .t1 { color: var(--muted); font: 600 11px var(--font-ui); text-transform: uppercase; letter-spacing: .05em; font-variant-numeric: tabular-nums; }
+.ltile .t2 { font: 600 20px/1.2 var(--font-display); font-variant-numeric: tabular-nums; }
+.ltile .t3 { color: var(--muted); font-size: 12px; }
+.ltile.miss .t3 { color: var(--rep); font-weight: 600; }
+.ltile.okk .t2 { color: var(--ok); } .ltile.low .t2 { color: var(--rep); }
+
+.grid2 { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 16px; }
+.ch { display: flex; flex-direction: column; gap: 10px; }
+.chead { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; }
+.chead p { color: var(--muted); font-size: 12px; }
+.chart { width: 100%; min-height: 230px; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.note { padding: 40px 8px; text-align: center; color: var(--muted); }
+.ax { fill: var(--muted); font: 11px var(--font-ui); }
+.vl { fill: var(--ink); font: 600 11px var(--font-ui); }
+.grid-l { stroke: var(--line); stroke-width: 1; }
+.ml { fill: var(--muted); font: 600 11px var(--font-ui); }
+.pt .hit { fill: transparent; }
+.pt .xh { stroke: var(--muted); stroke-width: 1; opacity: 0; }
+.pt .hv { fill: var(--accent); stroke: var(--surface); stroke-width: 2; opacity: 0; }
+.pt:hover .xh, .pt:hover .hv { opacity: 1; }
+.pt .bar { fill: var(--accent); }
+.pt:hover .bar { opacity: .82; }
+
+.heat { display: grid; grid-template-columns: 44px repeat(6, minmax(0, 1fr)); gap: 4px; }
+.hh { color: var(--muted); font: 600 11px var(--font-ui); text-transform: uppercase; letter-spacing: .05em; text-align: center; align-self: end; padding-bottom: 2px; }
+.hr { color: var(--muted); font: 500 12px var(--font-ui); display: flex; align-items: center; font-variant-numeric: tabular-nums; }
+.hc { min-height: 34px; display: grid; place-items: center; border-radius: 8px; background: var(--surface-2); background: color-mix(in srgb, var(--accent) calc(var(--p, 0) * 1%), var(--surface-2)); color: var(--ink); font: 600 12px var(--font-ui); font-variant-numeric: tabular-nums; }
+.hc.hi { color: #fff; }
+.hc.empty { color: var(--muted); font-weight: 400; background: var(--surface-2); }
+.hc.na { background: repeating-linear-gradient(135deg, transparent 0 4px, var(--line) 4px 5px); }
+.legend { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; color: var(--muted); font-size: 12px; }
+.legend .ramp { width: 120px; height: 8px; border-radius: 99px; background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 8%, var(--surface-2)), var(--accent)); box-shadow: inset 0 0 0 1px var(--line); }
+
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; }
+table { width: 100%; min-width: 560px; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th, td { padding: 9px 12px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+thead th { background: var(--surface-2); color: var(--muted); font: 600 11px var(--font-ui); text-transform: uppercase; letter-spacing: .06em; }
+tbody tr:last-child td { border-bottom: 0; }
+td.good { color: var(--ok); font-weight: 600; } td.bad { color: var(--bad); font-weight: 600; }
+details.tbl summary { cursor: pointer; font: 600 14px var(--font-display); margin-bottom: 12px; }
+
+.chip { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 99px; font: 600 12px var(--font-ui); background: var(--surface-2); color: var(--muted); width: fit-content; }
+.chip.ok { background: var(--ok-soft); color: var(--ok); }
+.chip.warn { background: var(--rep-soft); color: var(--rep); }
+.chip.acc { background: var(--accent-soft); color: var(--accent-text); }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* chamada rápida */
+.qbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; }
+.qbar .l { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.qbar input[type="date"] { min-height: 38px; padding: 0 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); font: 600 14px var(--font-ui); }
+.sv[hidden] { display: none; }
+.sv { display: inline-flex; align-items: center; gap: 6px; font: 500 12px var(--font-ui); color: var(--muted); }
+.sv i { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
+.sv.saved i { background: var(--ok); } .sv.saving i, .sv.pending i { background: var(--rep); } .sv.error i { background: var(--bad); }
+.sv.error { color: var(--bad); }
+.offsw { display: flex; align-items: center; gap: 10px; padding: 11px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; font-weight: 500; cursor: pointer; }
+.offsw input { width: 18px; height: 18px; accent-color: var(--btn); }
+.qlist { display: flex; flex-direction: column; gap: 8px; }
+.qlist[hidden] { display: none; }
+.qhead, .qgrid { display: grid; grid-template-columns: 150px repeat(4, minmax(0, 1fr)) 200px 178px; gap: 10px; align-items: center; grid-template-areas: "time v p r f stat act"; }
+.qhead { padding: 0 15px; color: var(--muted); font: 600 11px var(--font-ui); text-transform: uppercase; letter-spacing: .06em; }
+.qhead span { text-align: center; }
+.qhead span:first-child, .qhead span:nth-child(6) { text-align: left; }
+.qrow { display: flex; flex-direction: column; gap: 10px; padding: 12px 14px; background: var(--surface); border: 1.5px solid var(--line); border-radius: 14px; }
+.qrow.now { border-color: var(--btn); }
+.qtime { grid-area: time; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+.qtime b { font: 600 16px var(--font-display); font-variant-numeric: tabular-nums; }
+.qtag { padding: 1px 8px; border-radius: 99px; font: 700 10px var(--font-ui); text-transform: uppercase; letter-spacing: .05em; }
+.qtag.now { background: var(--btn); color: var(--btn-ink); }
+.qtag.miss { background: var(--rep-soft); color: var(--rep); }
+.qf { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.qf.v { grid-area: v; } .qf.p { grid-area: p; } .qf.r { grid-area: r; } .qf.f { grid-area: f; }
+.qf label { display: none; align-items: center; gap: 6px; font: 600 12px var(--font-ui); }
+.qs { display: flex; align-items: stretch; overflow: hidden; height: 44px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2); }
+.qs:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.qs button { flex: none; width: 34px; border: 0; background: transparent; color: var(--ink); font: 500 19px var(--font-ui); cursor: pointer; }
+.qs button:hover { background: var(--accent-soft); }
+.qs input { flex: 1; min-width: 0; width: 100%; padding: 0; border: 0; background: transparent; color: var(--ink); text-align: center; font: 600 20px var(--font-display); font-variant-numeric: tabular-nums; -moz-appearance: textfield; }
+.qs input::-webkit-outer-spin-button, .qs input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.qs input:focus { outline: none; }
+.qstat { grid-area: stat; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.qpct { font: 700 22px/1.1 var(--font-display); font-variant-numeric: tabular-nums; color: var(--muted); }
+.qpct.ok { color: var(--ok); } .qpct.low { color: var(--rep); } .qpct.chk { color: var(--bad); } .qpct.live { color: var(--accent-text); }
+.qsub { color: var(--muted); font-size: 12px; }
+.qact { grid-area: act; display: flex; flex-wrap: wrap; gap: 6px; }
+.qwarn { padding: 8px 10px; border-radius: 9px; background: var(--bad-soft); color: var(--bad); font-size: 12px; }
+.qwarn[hidden], .qdet[hidden] { display: none; }
+.qsug { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 9px; background: var(--accent-soft); color: var(--accent-text); font-size: 12px; }
+.qsug[hidden], .nsug[hidden] { display: none; }
+.qdet .wide { grid-column: 1 / -1; }
+.nsug { display: flex; flex-wrap: wrap; gap: 6px; }
+.nchip { border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); border-radius: 99px; padding: 5px 11px; font: 600 12px var(--font-ui); cursor: pointer; }
+.nchip:hover { background: var(--accent-soft); }
+#pendBar { display: flex; flex-direction: column; gap: 8px; }
+#pendBar:empty { display: none; }
+.banner.sugb { background: var(--accent-soft); }
+.drow.call { grid-template-columns: minmax(0, 1.2fr) auto minmax(0, 1fr) auto; }
+.qdet { display: grid; grid-template-columns: minmax(150px, 220px) minmax(0, 1fr); gap: 10px; align-items: end; padding-top: 10px; border-top: 1px dashed var(--line); }
+.qdet .field { display: flex; flex-direction: column; gap: 4px; }
+.qdet label { font: 600 12px var(--font-ui); }
+.fcur, .fobs { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); color: var(--ink); font: 13px var(--font-ui); }
+.fobs { resize: vertical; }
+.qtot { display: flex; flex-wrap: wrap; gap: 4px 18px; padding: 12px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; color: var(--muted); font-size: 13px; }
+.qtot b { color: var(--ink); font-variant-numeric: tabular-nums; }
+@media (max-width: 899.98px) {
+  .qhead { display: none; }
+  .qgrid { grid-template-columns: 1fr 1fr; grid-template-areas: "time time" "stat stat" "v p" "r f" "act act"; }
+  .qf label { display: flex; }
+  .qdet { grid-template-columns: minmax(0, 1fr); }
+}
+
+.stabs, .qnav { display: none; }
+@media (max-width: 700px) {
+  .stabs { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 10px; margin: 0 -2px; scroll-snap-type: x proximity; }
+  .stab { flex: none; scroll-snap-align: center; min-width: 68px; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); font: 600 12px var(--font-ui); cursor: pointer; }
+  .stab b { font: 700 15px var(--font-display); }
+  .stab span { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+  .stab.ok { border-color: var(--ok); } .stab.ok span { color: var(--ok); }
+  .stab.low { border-color: var(--rep); } .stab.low span { color: var(--rep); }
+  .stab.chk { border-color: var(--bad); } .stab.chk span { color: var(--bad); }
+  .stab.live span { color: var(--accent-text); }
+  .stab.miss { background: var(--rep-soft); border-style: dashed; } .stab.miss span { color: var(--rep); }
+  .stab.sel { background: var(--btn); color: var(--btn-ink); border-color: var(--btn); } .stab.sel span { color: var(--btn-ink); opacity: .85; }
+  .qrow:not(.sel) { display: none; }
+  .qs { height: 56px; } .qs button { width: 52px; font-size: 22px; } .qs input { font-size: 26px; }
+  .qpct { font-size: 30px; }
+  .qact .btn { min-height: 44px; flex: 1 1 0; }
+  .qnav { display: flex; gap: 10px; margin-top: 12px; }
+  .qnav .btn { flex: 1; min-height: 48px; }
+}
+.drows { display: flex; flex-direction: column; margin-top: 10px; }
+.drow { display: grid; grid-template-columns: 110px 130px minmax(0, 1fr) auto; align-items: center; gap: 8px 12px; padding: 10px 0; border-top: 1px solid var(--line); }
+.drow:first-child { border-top: 0; }
+.drow .dn { font-weight: 600; }
+.drow .tt { color: var(--muted); font-size: 13px; min-width: 0; }
+.drow .tt b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.chead.sp { margin-bottom: 2px; }
+.settings { display: flex; flex-direction: column; gap: 14px; }
+.srow { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; }
+.srow .lb { min-width: 0; flex: 1 1 260px; }
+.srow .lb b { display: block; font-weight: 600; }
+.numin { width: 84px; min-height: 38px; padding: 0 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); color: var(--ink); font: 600 15px var(--font-ui); text-align: center; }
+.textin { width: min(260px, 100%); min-height: 38px; padding: 0 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); color: var(--ink); font: 500 14px var(--font-ui); }
+.swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+.sw { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--surface); box-shadow: 0 0 0 1.5px var(--line); cursor: pointer; padding: 0; }
+.sw[aria-pressed="true"] { box-shadow: 0 0 0 2.5px var(--ink); }
+.out { width: 100%; min-height: 96px; padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); color: var(--ink); font: 12px/1.4 ui-monospace, Menlo, Consolas, monospace; }
+.logoprev { height: 40px; max-width: 140px; object-fit: contain; border-radius: 6px; border: 1px solid var(--line); background: #fff; }
+
+.tip { position: fixed; z-index: 50; max-width: 260px; padding: 8px 10px; border-radius: 9px; background: var(--ink); color: var(--bg); font: 500 12px/1.4 var(--font-ui); white-space: pre-line; pointer-events: none; box-shadow: var(--shadow); }
+.tip[hidden] { display: none; }
+.toast { position: fixed; left: 0; right: 0; bottom: 0; z-index: 60; display: flex; justify-content: center; pointer-events: none; padding: 0 max(16px, env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); opacity: 0; transform: translateY(8px); transition: opacity .2s, transform .2s; }
+.toast.show { opacity: 1; transform: none; }
+.toast span { max-width: 520px; padding: 10px 14px; border-radius: 10px; background: var(--ink); color: var(--bg); font-size: 13px; box-shadow: var(--shadow); }
+@media (max-width: 820px) {
+  .grid2 { grid-template-columns: minmax(0, 1fr); }
+  .drow { grid-template-columns: 1fr auto; }
+  .drow .tt { grid-column: 1 / -1; order: 3; }
+  .drow.call { grid-template-columns: 1fr auto; }
+}
+@media (prefers-reduced-motion: reduce) { .toast { transition: none; } }
+</style>
+
+<div class="app">
+  <header class="top">
+    <div class="brand" id="brand"></div>
+    <div class="topright">
+      <span class="conn" id="conn"><i></i><em id="connTx" style="font-style:normal">Conectando…</em></span>
+      <button class="btn primary" id="hdrFill" type="button">Preencher dia</button>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Seções">
+    <button class="tab" role="tab" id="tab-dashboards" data-tab="dashboards" aria-controls="view-dash" aria-selected="true" type="button">Dashboards</button>
+    <button class="tab" role="tab" id="tab-preencher" data-tab="preencher" aria-controls="view-fill" aria-selected="false" type="button">Preencher <span class="badge" id="pendBadge" hidden></span></button>
+  </nav>
+
+  <section class="view" id="view-dash" role="tabpanel" aria-labelledby="tab-dashboards"></section>
+  <section class="view" id="view-fill" role="tabpanel" aria-labelledby="tab-preencher" hidden></section>
+</div>
+
+<div class="tip" id="tip" hidden></div>
+<div class="toast" id="toast" role="status" aria-live="polite"><span id="toastMsg"></span></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="firebase-adapter.js"></script>
+<script>
+(() => {
+'use strict';
+
+/* ---------- utilidades ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const pad = n => String(n).padStart(2, '0');
+const iso = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+const pISO = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const addD = (d, n) => { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() + n); return x; };
+const sod = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+const today = () => sod(new Date());
+const dowOf = d => (d.getDay() + 6) % 7;            // 0 = segunda ... 6 = domingo
+const DS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+const DL = ['Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado', 'Domingo'];
+const ML = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+const dm = d => pad(d.getDate()) + '/' + pad(d.getMonth() + 1);
+const dayTag = d => DS[dowOf(d)] + ' ' + dm(d);
+const clamp = v => { v = parseInt(v, 10); return isNaN(v) ? 0 : Math.min(999, Math.max(0, v)); };
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const nf = (v, d = 0) => v.toLocaleString('pt-BR', { maximumFractionDigits: d, minimumFractionDigits: d });
+const rate = (n, d) => d > 0 ? n / d * 100 : null;
+const slotsOf = dow => dow === 6 ? [] : (dow === 5 ? [8, 10, 13, 15] : [8, 10, 12, 14, 16, 18, 20]);
+/* horários do formulário: os do dia da semana mais qualquer horário antigo que já tenha dados salvos */
+const slotHours = (dow, doc) => { const s = new Set(slotsOf(dow)); if (doc && doc.s) Object.keys(doc.s).forEach(k => { const e = doc.s[k] || {}; if ((e.v || e.a || 0) + (e.p || 0) + (e.r || 0) + (e.f || 0) > 0) s.add(+k); }); return Array.from(s).sort((a, b) => a - b); };
+const endOf = (dow, h) => h + 2;
+const hh = h => pad(h) + ':00';
+const HOURS = [8, 10, 12, 13, 14, 15, 16, 18, 20];
+const hourNow = () => { const n = new Date(); return n.getHours() + n.getMinutes() / 60; };
+const slotEnded = (date, dow, h) => { const t = iso(today()); return date < t || (date === t && hourNow() >= endOf(dow, h)); };
+const slotNow = (date, dow, h) => date === iso(today()) && hourNow() >= h && hourNow() < endOf(dow, h);
+/* Passados "tol" minutos do início, quem foi vendido e não veio já conta como falta. */
+const tolMin = () => S.cfg.tol || 30;
+const closeAt = (dow, h) => Math.min(endOf(dow, h), h + tolMin() / 60);
+const slotClosed = (date, dow, h) => { const t = iso(today()); return date < t || (date === t && hourNow() >= closeAt(dow, h)); };
+const clockOf = x => pad(Math.floor(x)) + ':' + pad(Math.round((x % 1) * 60) % 60);
+
+/* ---------- estado e armazenamento ---------- */
+const S = { days: {}, cfg: { meta: 85, capSem: 10, capSab: 25, escola: '', cor: 'azul', tol: 30, avisos: {} }, logo: '', mode: 'loading', loaded: false, synced: false, slow: false, err: null, demo: false, demoDays: null, range: '7', heat: 'faltas', tab: 'dashboards', dbh: null };
+let D = null, saveT = null, savingP = null, saveAgain = false;
+const LS2 = 'controle-alunos-v2', LS1 = 'controle-alunos-v1', LSI = 'controle-alunos-importado';
+const ls = {
+  get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } }
+};
+const getDays = () => S.demo ? S.demoDays : S.days;
+const capDef = dow => dow === 5 ? S.cfg.capSab : S.cfg.capSem;
+
+/* Um período salvo: { cap: vagas, v: vendidos, p: presentes, r: reposição, f: faltas, c: cursos }.
+   Lançamentos antigos tinham só "a": viram vendidos. Depois que o horário termina, quem foi vendido e não veio conta como falta. */
+function normSlot(e, dow) {
+  e = e || {};
+  const v = (e.v !== undefined && e.v !== null) ? clamp(e.v) : clamp(e.a);
+  const cap = (e.cap !== undefined && e.cap !== null && clamp(e.cap) > 0) ? clamp(e.cap) : capDef(dow);
+  return { cap, v, p: clamp(e.p), r: clamp(e.r), f: clamp(e.f), c: e.c || '', n: typeof e.n === 'string' ? e.n : '' };
+}
+function effSlot(raw, date, dow, h) {
+  const n = normSlot(raw, dow);
+  if (n.p > 0 && slotClosed(date, dow, h)) n.f = Math.max(n.f, n.v - n.p);
+  return n;
+}
+function slotsOfDoc(doc, date) {
+  const dow = dowOf(pISO(date)), out = [];
+  if (doc && doc.s) Object.keys(doc.s).forEach(k => {
+    const n = effSlot(doc.s[k], date, dow, +k);
+    if (n.v + n.p + n.r + n.f > 0) out.push(Object.assign({ h: +k }, n));
+  });
+  return out;
+}
+const docTot = (doc, date) => {
+  const t = { v: 0, p: 0, r: 0, f: 0, cap: 0 };
+  slotsOfDoc(doc, date).forEach(s => { t.v += s.v; t.p += s.p; t.r += s.r; t.f += s.f; t.cap += s.cap; });
+  return t;
+};
+const hasData = (doc, date) => !!doc && !doc.off && slotsOfDoc(doc, date).length > 0;
+const anyData = days => Object.keys(days).some(k => hasData(days[k], k));
+
+function legacyDays() {
+  const raw = ls.get(LS1); if (!raw) return null;
+  try {
+    const o = JSON.parse(raw), out = {};
+    Object.keys(o).forEach(d => {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) return;
+      const s = {};
+      Object.keys(o[d] || {}).forEach(k => {
+        const e = o[d][k] || {}, q = { v: clamp(e.a), p: clamp(e.p), r: clamp(e.r), f: clamp(e.f) };
+        if (q.v + q.p + q.r + q.f > 0) s[k] = q;
+      });
+      if (Object.keys(s).length) out[d] = { d, s, t: 0 };
+    });
+    return Object.keys(out).length ? out : null;
+  } catch (e) { return null; }
+}
+function loadLocal() {
+  const raw = ls.get(LS2);
+  if (raw) {
+    try { const o = JSON.parse(raw); S.days = o.dias || {}; const c = o.cfg || {}; S.logo = c.logo || ''; delete c.logo; S.cfg = Object.assign(S.cfg, c); return; } catch (e) { /* segue */ }
+  }
+  S.days = legacyDays() || {};
+}
+const saveLocal = () => ls.set(LS2, JSON.stringify({ dias: S.days, cfg: Object.assign({}, S.cfg, { logo: S.logo }) }));
+const okNum = (k, v) => typeof v === 'number' && v >= 1 && v <= (k === 'meta' ? 100 : k === 'tol' ? 90 : 999);
+
+function startLocal() {
+  if (S.mode !== 'loading') return;
+  S.mode = 'local'; loadLocal(); S.loaded = true; S.synced = true; paintBrand(); renderAll();
+}
+function startDb(db) {
+  S.mode = 'db'; S.dbh = db;
+  const timer = setTimeout(() => { if (!S.synced) { S.slow = true; paintConn(); } }, 10000);
+  db.collection('dias').onSnapshot(snap => {
+    const m = {};
+    snap.docs.forEach(d => { if (d.exists) m[d.id] = d.data(); });
+    S.days = m; S.loaded = true; S.err = null;
+    if (!snap.metadata.fromCache) { S.synced = true; S.slow = false; clearTimeout(timer); }
+    renderAll();
+  }, e => { S.err = (e && e.code) || 'unavailable'; S.loaded = true; renderAll(); });
+  db.doc('config/geral').onSnapshot(s => {
+    if (s.exists) {
+      const c = s.data() || {};
+      ['meta', 'capSem', 'capSab', 'tol'].forEach(k => { if (okNum(k, c[k])) S.cfg[k] = Math.round(c[k]); });
+      if (c.avisos && typeof c.avisos === 'object') S.cfg.avisos = c.avisos;
+      if (typeof c.escola === 'string') S.cfg.escola = c.escola.slice(0, 60);
+      if (typeof c.cor === 'string' && PAL[c.cor]) S.cfg.cor = c.cor;
+    }
+    paintBrand(); renderAll();
+  }, () => {});
+  db.doc('config/logo').onSnapshot(s => { S.logo = (s.exists && s.data() && typeof s.data().img === 'string') ? s.data().img : ''; paintBrand(); if (S.tab === 'preencher') renderSettings(); }, () => {});
+}
+function init() {
+  paintBrand(); renderAll();
+  if (!window.claude || !window.claude.use) { startLocal(); return; }
+  const t = setTimeout(startLocal, 12000);
+  window.claude.use('db').then(db => {
+    clearTimeout(t);
+    if (S.mode !== 'loading') return;
+    db ? startDb(db) : startLocal();
+  }).catch(() => { clearTimeout(t); startLocal(); });
+}
+
+async function persistDay(date, doc) {
+  doc.d = date;
+  if (S.mode === 'db') await S.dbh.collection('dias').doc(date).set(doc);
+  S.days = Object.assign({}, S.days, { [date]: doc });
+  if (S.mode !== 'db' && !saveLocal()) throw { code: 'storage' };
+}
+async function persistDelete(date) {
+  if (S.mode === 'db') await S.dbh.collection('dias').doc(date).delete();
+  const m = Object.assign({}, S.days); delete m[date]; S.days = m;
+  if (S.mode !== 'db' && !saveLocal()) throw { code: 'storage' };
+}
+async function persistCfg(k, v) {
+  S.cfg[k] = v;
+  if (S.mode === 'db') await S.dbh.doc('config/geral').set({ meta: S.cfg.meta, capSem: S.cfg.capSem, capSab: S.cfg.capSab, escola: S.cfg.escola, cor: S.cfg.cor, tol: S.cfg.tol, avisos: S.cfg.avisos || {} });
+  else if (!saveLocal()) throw { code: 'storage' };
+}
+async function persistLogo(img) {
+  S.logo = img || '';
+  if (S.mode === 'db') await S.dbh.doc('config/logo').set({ img: S.logo });
+  else if (!saveLocal()) throw { code: 'storage' };
+}
+function errMsg(e) {
+  const c = e && e.code;
+  if (c === 'invalid_argument' || c === 'permission-denied') return 'Sem permissão para salvar. Peça ao dono da página acesso de edição.';
+  if (c === 'quota_exceeded' || c === 'resource-exhausted') return 'O limite de armazenamento foi atingido. Avise quem administra a página.';
+  if (c === 'storage') return 'Este navegador não permite salvar. Copie os dados para o Excel para não perder.';
+  return 'Não foi possível salvar agora. Tente de novo em instantes.';
+}
+
+/* ---------- marca da escola ---------- */
+const PAL = {
+  azul:    { n: 'Azul',    l: ['#2a78d6', '#1c5cab', '#1f64bd', '#ffffff'], d: ['#3987e5', '#86b6ef', '#6da7ec', '#0b1018'] },
+  verde:   { n: 'Verde',   l: ['#1b9a68', '#11694a', '#157a52', '#ffffff'], d: ['#3fc38d', '#7fdcb4', '#5ccf9f', '#0b1a13'] },
+  roxo:    { n: 'Roxo',    l: ['#6250d6', '#4a3aa7', '#5342c4', '#ffffff'], d: ['#9085e9', '#b5adf2', '#a79df0', '#120f26'] },
+  laranja: { n: 'Laranja', l: ['#e0661f', '#a64a12', '#c4560f', '#ffffff'], d: ['#f08a4b', '#f6b07f', '#f59a60', '#1f1005'] },
+  vermelho:{ n: 'Vermelho',l: ['#d03b3b', '#a22b2b', '#b82f2f', '#ffffff'], d: ['#ee7070', '#f5a0a0', '#f28585', '#240808'] },
+  grafite: { n: 'Grafite', l: ['#475569', '#334155', '#334155', '#ffffff'], d: ['#94a3b8', '#cbd5e1', '#a8b5c7', '#0f1620'] }
+};
+function rgba(hex, a) { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; }
+function paintBrand() {
+  const p = PAL[S.cfg.cor] || PAL.azul;
+  const set = (c, soft) => `--accent:${c[0]};--accent-text:${c[1]};--accent-soft:${rgba(c[0], soft)};--btn:${c[2]};--btn-ink:${c[3]};`;
+  let st = $('#brandStyle');
+  if (!st) { st = document.createElement('style'); st.id = 'brandStyle'; document.body.appendChild(st); }
+  st.textContent = `html:root{${set(p.l, .12)}}@media (prefers-color-scheme: dark){html:root:not([data-theme="light"]){${set(p.d, .2)}}}html:root[data-theme="dark"]{${set(p.d, .2)}}`;
+  const b = $('#brand');
+  b.innerHTML = (S.logo ? `<img src="${esc(S.logo)}" alt="Logo da escola">` : '') + `<div>${S.cfg.escola ? `<div class="eyebrow">${esc(S.cfg.escola)}</div>` : ''}<h1>Controle de Alunos</h1><p class="sub" id="today"></p></div>`;
+  paintConn();
+}
+
+/* ---------- cálculos ---------- */
+function agg(days, from, to) {
+  const R = { t: { v: 0, p: 0, r: 0, f: 0, cap: 0 }, n: 0, off: 0, pending: [], byDay: [], cell: {}, hour: {}, issues: 0, slotsN: 0, list: [] };
+  const td = today();
+  for (let d = from; d <= to; d = addD(d, 1)) {
+    const dow = dowOf(d); if (dow === 6 || d > td) continue;
+    const key = iso(d), doc = days[key];
+    if (!doc) { if (d < td) R.pending.push(key); R.list.push({ date: key, d, dow, t: null }); continue; }
+    if (doc.off) { R.off++; continue; }
+    const sl = slotsOfDoc(doc, key);
+    if (!sl.length) { R.list.push({ date: key, d, dow, t: null }); continue; }
+    const t = { v: 0, p: 0, r: 0, f: 0, cap: 0 };
+    sl.forEach(s => {
+      ['v', 'p', 'r', 'f', 'cap'].forEach(m => { t[m] += s[m]; R.t[m] += s[m]; });
+      const c = R.cell[dow + '-' + s.h] = R.cell[dow + '-' + s.h] || { v: 0, p: 0, r: 0, f: 0, cap: 0 };
+      ['v', 'p', 'r', 'f', 'cap'].forEach(m => { c[m] += s[m]; });
+      const o = R.hour[s.h] = R.hour[s.h] || { v: 0, cap: 0, n: 0, sala: 0, pico: 0, f: 0, ratios: [] };
+      o.v += s.v; o.cap += s.cap; o.n++; o.sala += s.p + s.r; o.f += s.f; o.pico = Math.max(o.pico, s.p + s.r); R.slotsN++;
+      if (s.v > 0 && s.p > 0 && slotClosed(key, dow, s.h)) o.ratios.push((s.p + s.r) / s.v);
+      if (s.p + s.f > s.v || s.v > s.cap) R.issues++;
+    });
+    R.n++;
+    const row = { date: key, d, dow, t };
+    R.byDay.push(row); R.list.push(row);
+  }
+  return R;
+}
+function rangeOf(key) {
+  const td = today(); let f = td;
+  if (key === '7') f = addD(td, -6);
+  else if (key === '30') f = addD(td, -29);
+  else if (key === 'mes') f = new Date(td.getFullYear(), td.getMonth(), 1);
+  else if (key === 'tudo') { const ks = Object.keys(getDays()).sort(); f = ks.length ? pISO(ks[0]) : td; }
+  return [f, td];
+}
+function prevRange(key, f, t) {
+  if (key === 'tudo') return null;
+  if (key === 'hoje') {
+    for (let i = 1; i <= 14; i++) { const d = addD(t, -i); if (hasData(getDays()[iso(d)], iso(d))) return [d, d]; }
+    return null;
+  }
+  const n = Math.round((t - f) / 864e5) + 1;
+  if (key === 'mes') { const pf = new Date(f.getFullYear(), f.getMonth() - 1, 1); return [pf, addD(pf, n - 1)]; }
+  return [addD(f, -n), addD(f, -1)];
+}
+const RANGES = [['hoje', 'Hoje'], ['7', '7 dias'], ['30', '30 dias'], ['mes', 'Este mês'], ['tudo', 'Tudo']];
+
+/* ---------- dados de exemplo (só na tela, nunca salvos) ---------- */
+function makeDemo() {
+  const out = {}; let seed = 7;
+  const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+  const td = today();
+  for (let i = 45; i >= 0; i--) {
+    const d = addD(td, -i), dow = dowOf(d); if (dow === 6) continue;
+    if (i > 0 && rnd() < .04) { out[iso(d)] = { off: true }; continue; }
+    const s = {}, cap = dow === 5 ? 25 : 10;
+    slotsOf(dow).forEach(h => {
+      if (i === 0 && h > new Date().getHours()) return;
+      const v = Math.max(2, Math.min(cap, Math.round(cap * (.4 + rnd() * .5) + (h >= 18 ? cap * .1 : 0))));
+      const pf = .07 + (dow === 0 ? .09 : 0) + (h >= 18 ? .06 : 0) + (dow === 4 ? .05 : 0);
+      let f = 0; for (let j = 0; j < v; j++) if (rnd() < pf) f++;
+      const r = rnd() < .35 ? 1 + (rnd() < .4 ? 1 : 0) : 0;
+      s[pad(h)] = { cap, v, p: v - f, r, f };
+    });
+    out[iso(d)] = { s };
+  }
+  return out;
+}
+
+/* ---------- cabeçalho, abas, status ---------- */
+function paintConn() {
+  const el = $('#conn'), tx = $('#connTx');
+  let cls = 'conn', t = 'Conectando…';
+  if (S.mode === 'db') {
+    if (S.err) { cls += ' bad'; t = 'Sem acesso aos dados compartilhados'; }
+    else if (S.slow) { cls += ' warn'; t = 'Servidor sem resposta, dados podem estar desatualizados'; }
+    else if (!S.synced) { cls += ' warn'; t = 'Sincronizando…'; }
+    else { cls += ' on'; t = 'Dados compartilhados'; }
+  } else if (S.mode === 'local') { cls += ' warn'; t = 'Salvo só neste navegador'; }
+  el.className = cls; tx.textContent = t;
+  const d = today(), td = $('#today');
+  if (td) td.textContent = DL[dowOf(d)] + ', ' + d.getDate() + ' de ' + ML[d.getMonth()] + ' de ' + d.getFullYear();
+  const t0 = today(), p = (S.loaded && anyData(S.days)) ? agg(S.days, addD(t0, -6), t0).pending.length : 0;
+  const b = $('#pendBadge'); b.hidden = !p; b.textContent = p;
+}
+async function setTab(t, push) {
+  if (S.tab === 'preencher' && t !== 'preencher') await flushSave();
+  S.tab = t;
+  $('#view-dash').hidden = t !== 'dashboards';
+  $('#view-fill').hidden = t !== 'preencher';
+  $('#tab-dashboards').setAttribute('aria-selected', String(t === 'dashboards'));
+  $('#tab-preencher').setAttribute('aria-selected', String(t === 'preencher'));
+  if (push) { try { location.hash = t; } catch (e) { /* ignora */ } }
+  renderAll();
+}
+function renderAll() {
+  paintConn();
+  if (S.tab === 'dashboards') renderDash(); else renderFill();
+}
+async function openDay(date) {
+  await setTab('preencher', true);
+  await gotoDate(date || defaultDate());
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function defaultDate() { const t = today(); return iso(dowOf(t) === 6 ? addD(t, -1) : t); }
+
+/* ---------- aba Dashboards ---------- */
+const chartDraws = [];
+function deltaOf(cur, prev, kind, good) {
+  if (cur == null || prev == null) return null;
+  const diff = cur - prev;
+  if (Math.abs(diff) < (kind === 'pts' ? .05 : .0001)) return { txt: '= igual', cls: '' };
+  let txt;
+  if (kind === 'pts') txt = (diff > 0 ? '▲ ' : '▼ ') + nf(Math.abs(diff), 1) + ' pts';
+  else { if (prev === 0) return null; txt = (diff > 0 ? '▲ ' : '▼ ') + nf(Math.abs(diff / prev * 100), 0) + '%'; }
+  const up = diff > 0;
+  const cls = good === 'none' ? '' : ((good === 'up') === up ? 'good' : 'bad');
+  return { txt, cls };
+}
+function kpiHTML(o) {
+  const d = o.delta ? `<div class="kd ${o.delta.cls}">${o.delta.txt}<span>vs. anterior</span></div>` : `<div class="kd"><span>sem período anterior</span></div>`;
+  return `<div class="kpi${o.hero ? ' hero' : ''}"><div class="kl"><span class="dotc ${o.dot}"></span>${o.label}</div><div class="kv">${o.value}</div>${d}<div class="km">${o.meta || ''}</div></div>`;
+}
+function buildAlerts(cur, pres, key) {
+  const A = [], meta = S.cfg.meta;
+  if (key !== 'hoje' && cur.pending.length) {
+    const ds = cur.pending.map(k => dayTag(pISO(k)));
+    const shown = ds.slice(-4).join(', ') + (ds.length > 4 ? ' e mais ' + (ds.length - 4) : '');
+    A.push({ lvl: 'warn', t: `${cur.pending.length} ${cur.pending.length > 1 ? 'dias sem lançamento' : 'dia sem lançamento'}`, d: shown, act: { label: 'Preencher', date: cur.pending[cur.pending.length - 1] } });
+  }
+  if (pres != null) {
+    if (pres < meta) A.push({ lvl: 'bad', t: `Presença de ${nf(pres, 1)}% abaixo da meta de ${meta}%`, d: 'Veja no mapa por dia e horário onde estão as faltas.' });
+    else A.push({ lvl: 'ok', t: `Presença de ${nf(pres, 1)}% dentro da meta de ${meta}%`, d: '' });
+  }
+  let worst = null; const minV = key === 'hoje' ? 3 : 6;
+  Object.keys(cur.cell).forEach(k => {
+    const c = cur.cell[k]; if (c.v < minV) return;
+    const r = c.f / c.v * 100;
+    if (!worst || r > worst.r) worst = { r, c, k };
+  });
+  if (worst && worst.r >= 10) {
+    const [dw, h] = worst.k.split('-').map(Number);
+    A.push({ lvl: 'warn', t: `${DS[dw]} às ${hh(h)} tem ${nf(worst.r, 0)}% de faltas`, d: `${worst.c.f} faltas em ${worst.c.v} vendidos` });
+  }
+  let low = null;
+  HOURS.forEach(h => { const o = cur.hour[h]; if (!o || o.n < 3) return; const r = o.v / o.cap * 100; if (!low || r < low.r) low = { r, h, o }; });
+  if (low && low.r < 50) A.push({ lvl: 'warn', t: `Menor ocupação: ${hh(low.h)}, com ${nf(low.r, 0)}% das vagas vendidas`, d: `Média de ${nf(low.o.v / low.o.n, 1)} vendidos por período` });
+  if (cur.issues > 0) A.push({ lvl: 'warn', t: `${cur.issues} ${cur.issues > 1 ? 'períodos com números para conferir' : 'período com números para conferir'}`, d: 'Presentes + faltas acima dos vendidos, ou vendidos acima das vagas.' });
+  return A;
+}
+function alertHTML(a) {
+  const ic = a.lvl === 'ok' ? '✓' : '!';
+  const lab = a.lvl === 'ok' ? 'Tudo certo' : (a.lvl === 'bad' ? 'Atenção' : 'Verificar');
+  return `<div class="alert ${a.lvl}"><span class="ic" aria-label="${lab}">${ic}</span><div class="tx"><b>${esc(a.t)}</b>${a.d ? `<div class="dt">${esc(a.d)}</div>` : ''}</div>${a.act ? `<button class="btn sm" type="button" data-fill="${a.act.date}">${a.act.label}</button>` : ''}</div>`;
+}
+const HM = {
+  faltas: { label: 'Faltas', fn: c => rate(c.f, c.v), desc: 'faltas ÷ vendidos' },
+  presenca: { label: 'Presença', fn: c => rate(c.p, c.v), desc: 'presentes ÷ vendidos' },
+  ocupacao: { label: 'Vendas', fn: c => rate(c.v, c.cap), desc: 'vendidos ÷ vagas' },
+  sala: { label: 'Sala real', fn: c => rate(c.p + c.r, c.cap), desc: '(presentes + reposições) ÷ vagas' }
+};
+
+function liveHTML(days) {
+  const td = today(), key = iso(td), dow = dowOf(td); if (dow === 6) return '';
+  const doc = days[key];
+  const hs = slotsOf(dow);
+  const tiles = hs.map(h => {
+    const e = effSlot(doc && doc.s && doc.s[pad(h)], key, dow, h), used = e.v + e.p + e.r + e.f > 0;
+    const ended = slotEnded(key, dow, h), closed = slotClosed(key, dow, h), now = slotNow(key, dow, h);
+    const pct = e.v > 0 ? Math.round(e.p / e.v * 100) : null;
+    let cls = now ? ' now' : '', t3, t2 = '—';
+    if (used) {
+      t2 = `${e.p}/${e.v}`;
+      if (closed && pct != null) cls += pct >= S.cfg.meta ? ' okk' : ' low';
+      t3 = closed ? `${pct == null ? '—' : pct + '%'} · sala ${e.p + e.r}/${e.cap}` : `faltam chegar ${Math.max(0, e.v - e.p - e.f)}`;
+    } else if (ended) { cls += ' miss'; t3 = 'sem lançamento'; }
+    else t3 = now ? 'em andamento' : `${e.cap} vagas`;
+    return `<button class="ltile${cls}" type="button" data-fill="${key}"><span class="t1">${pad(h)}h – ${pad(endOf(dow, h))}h${now ? ' · agora' : ''}</span><span class="t2">${t2}</span><span class="t3">${t3}</span></button>`;
+  }).join('');
+  const cur = hs.find(h => slotNow(key, dow, h));
+  const nxt = hs.find(h => h > hourNow());
+  let chip;
+  if (cur != null) chip = `<span class="chip acc">Em andamento: ${hh(cur)} – ${hh(endOf(dow, cur))}</span>`;
+  else if (nxt != null) chip = `<span class="chip">Próximo horário: ${hh(nxt)}</span>`;
+  else chip = '<span class="chip">Aulas de hoje encerradas</span>';
+  const t = docTot(doc, key);
+  const sum = t.v ? `${t.p} presentes de ${t.v} vendidos${t.r ? ` · ${t.r} reposições` : ''}${t.f ? ` · ${t.f} faltas` : ''}` : 'Nenhum horário lançado ainda';
+  return `<div class="card live"><div class="lhead"><div><h3>Hoje ao vivo · ${dayTag(td)}</h3><p class="sub">${sum}</p></div><div class="actions">${chip}<button class="btn sm primary" type="button" data-fill="${key}">Chamada rápida</button></div></div><div class="ltiles">${tiles}</div></div>`;
+}
+function roomHTML(cur) {
+  const rows = HOURS.filter(h => cur.hour[h]).map(h => {
+    const o = cur.hour[h], cap = Math.round(o.cap / o.n), folga = Math.max(0, cap - o.pico), few = o.n < 4;
+    const rs = (o.ratios || []).slice().sort((a, b) => a - b), q90 = rs.length >= 5 ? rs[Math.ceil(rs.length * 0.9) - 1] : null;
+    const safe = q90 ? Math.min(Math.floor(cap / q90), cap * 2) : null, avgV = Math.round(o.v / o.n);
+    return `<tr><td>${hh(h)} – ${hh(h + 2)}</td><td>${cap}</td><td>${nf(o.v / o.n, 1)}</td><td>${nf(o.sala / o.n, 1)}</td><td>${nf(o.f / o.n, 1)}</td><td>${o.pico}</td><td class="${folga > 0 ? 'good' : ''}">${folga > 0 ? '+' + folga : '0'}${few ? ' *' : ''}</td><td class="${safe != null && safe > avgV ? 'good' : ''}">${safe == null ? '—' : 'até ' + safe + (safe > avgV ? ' (+' + (safe - avgV) + ')' : '')}</td></tr>`;
+  });
+  let best = null;
+  HOURS.forEach(h => { const o = cur.hour[h]; if (!o || o.n < 3) return; const f = Math.round(o.cap / o.n) - o.pico; if (f > 0 && (!best || f > best.f)) best = { f, h, o, cap: Math.round(o.cap / o.n) }; });
+  const ins = best ? `Às ${hh(best.h)} a sala nunca passou de ${best.o.pico} pessoas (de ${best.cap} vagas): dá para vender até ${best.f} a mais sem lotar.` : 'Nos horários com 3 ou mais registros, a sala já chegou perto das vagas. Não há folga clara para vender mais.';
+  return `<div class="card ch"><div class="chead"><h3>Espaço para vender mais</h3><p>sala real = presentes + reposições</p></div><p>${ins}</p><div class="tablewrap"><table><thead><tr><th>Horário</th><th>Vagas</th><th>Vendidos (média)</th><th>Sala real (média)</th><th>Faltas (média)</th><th>Pico da sala</th><th>Folga</th><th>Venda segura</th></tr></thead><tbody>${rows.join('')}</tbody></table></div><p class="sub" style="font-size:12px">Folga = vagas − pico da sala no período escolhido. Venda segura = quantos vender para a sala ficar dentro das vagas em 9 de cada 10 dias, pela presença que já aconteceu (precisa de 5 registros; o + compara com a média vendida). * poucos registros, use com cuidado.</p></div>`;
+}
+function weekHTML(days) {
+  const td = today(), ws = addD(td, -dowOf(td));
+  const dayT = d => { if (d > td || dowOf(d) === 6) return null; const k = iso(d); return hasData(days[k], k) ? docTot(days[k], k) : null; };
+  const pc = t => t ? rate(t.p, t.v) : null, oc = t => t ? rate(t.v, t.cap) : null;
+  const f1 = v => v == null ? '—' : nf(v, 0) + '%';
+  const dl = (a, b) => { if (a == null || b == null) return '<td>—</td>'; const x = a - b; return `<td class="${Math.abs(x) < .5 ? '' : (x > 0 ? 'good' : 'bad')}">${Math.abs(x) < .5 ? '=' : (x > 0 ? '▲ ' : '▼ ') + nf(Math.abs(x), 0) + ' pts'}</td>`; };
+  const A = { v: 0, p: 0, cap: 0 }, B = { v: 0, p: 0, cap: 0 };
+  let rows = '';
+  for (let i = 0; i < 6; i++) {
+    const d1 = addD(ws, i), d0 = addD(ws, i - 7), t1 = dayT(d1), t0 = dayT(d0);
+    if (t1 && t0) { A.v += t1.v; A.p += t1.p; A.cap += t1.cap; B.v += t0.v; B.p += t0.p; B.cap += t0.cap; }
+    rows += `<tr><td>${DS[i]} <span class="sub">${dm(d1)}</span></td><td>${f1(pc(t1))}</td><td>${f1(pc(t0))}</td>${dl(pc(t1), pc(t0))}<td>${f1(oc(t1))}</td><td>${f1(oc(t0))}</td></tr>`;
+  }
+  rows += `<tr><td><b>Mesmos dias</b></td><td><b>${f1(rate(A.p, A.v))}</b></td><td><b>${f1(rate(B.p, B.v))}</b></td>${dl(rate(A.p, A.v), rate(B.p, B.v))}<td><b>${f1(rate(A.v, A.cap))}</b></td><td><b>${f1(rate(B.v, B.cap))}</b></td></tr>`;
+  return `<div class="card ch"><div class="chead"><h3>Semana atual × anterior</h3><p>presença = presentes ÷ vendidos · vendas = vendidos ÷ vagas</p></div><div class="tablewrap"><table><thead><tr><th>Dia</th><th>Presença esta semana</th><th>Presença anterior</th><th>Diferença</th><th>Vendas esta semana</th><th>Vendas anterior</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+}
+function monthText() {
+  const td = today(), f = new Date(td.getFullYear(), td.getMonth(), 1), cur = agg(getDays(), f, td), T = cur.t;
+  if (!cur.n) return null;
+  let bestH = null, worstH = null;
+  HOURS.forEach(h => { const o = cur.hour[h]; if (!o) return; const r = rate(o.f, o.v); if (r == null) return; if (!worstH || r > worstH.r) worstH = { r, h }; if (!bestH || r < bestH.r) bestH = { r, h }; });
+  const L = [`Resumo de ${ML[td.getMonth()]} de ${td.getFullYear()} (${dm(f)} a ${dm(td)})`, '',
+    `Presença: ${nf(rate(T.p, T.v) ?? 0, 1)}% (meta ${S.cfg.meta}%)`,
+    `Vendas: ${nf(T.v)} de ${nf(T.cap)} vagas (${nf(rate(T.v, T.cap) ?? 0, 1)}% de ocupação)`,
+    `Presentes: ${nf(T.p)} · Reposições: ${nf(T.r)} · Faltas: ${nf(T.f)} (${nf(rate(T.f, T.v) ?? 0, 1)}% dos vendidos)`,
+    `Dias lançados: ${cur.n} de ${cur.n + cur.pending.length}`];
+  if (worstH) L.push(`Horário com mais faltas: ${hh(worstH.h)} (${nf(worstH.r, 0)}%)`);
+  if (bestH) L.push(`Horário com menos faltas: ${hh(bestH.h)} (${nf(bestH.r, 0)}%)`);
+  return L.join('\n');
+}
+
+function renderDash() {
+  const root = $('#view-dash'), key = S.range;
+  chartDraws.length = 0;
+  if (!S.loaded) { root.innerHTML = '<div class="card empty"><p class="sub">Carregando dados…</p></div>'; return; }
+  if (S.err) { root.innerHTML = '<div class="card empty"><h3>Não consegui abrir os dados compartilhados</h3><p class="sub">Verifique se você tem acesso à página e recarregue. Seus lançamentos não foram perdidos.</p></div>'; return; }
+  const days = getDays();
+  if (!anyData(days)) {
+    root.innerHTML = `<div class="card empty"><h2>Ainda não há lançamentos</h2><p class="sub">Use o botão Preencher dia para fazer a chamada de cada horário. Os gráficos aparecem aqui assim que houver dados.</p><div class="actions"><button class="btn primary big" type="button" data-fill="">Preencher dia</button><button class="btn big" type="button" id="demoOn">Ver com dados de exemplo</button></div></div>`;
+    return;
+  }
+  const [f, t] = rangeOf(key), cur = agg(days, f, t), pr = prevRange(key, f, t), prev = pr ? agg(days, pr[0], pr[1]) : null;
+  const T = cur.t, P = prev ? prev.t : null, meta = S.cfg.meta;
+  const noData = cur.n === 0, dash = '—';
+  const pres = rate(T.p, T.v), presP = P ? rate(P.p, P.v) : null;
+  const occ = rate(T.v, T.cap), occP = P ? rate(P.v, P.cap) : null;
+  const falt = rate(T.f, T.v);
+  const kp = [
+    kpiHTML({ hero: true, dot: 'c-p', label: 'Presença', value: pres == null ? dash : nf(pres, 1) + '%', delta: deltaOf(pres, presP, 'pts', 'up'), meta: pres == null ? 'presentes ÷ vendidos' : `Meta ${meta}% · ${pres >= meta ? 'atingida' : 'abaixo da meta'}` }),
+    kpiHTML({ dot: 'c-x', label: 'Ocupação', value: occ == null ? dash : nf(occ, 1) + '%', delta: deltaOf(occ, occP, 'pts', 'up'), meta: occ == null ? '' : `${nf(T.v)} vendidos de ${nf(T.cap)} vagas` }),
+    kpiHTML({ dot: 'c-x', label: 'Vendidos', value: noData ? dash : nf(T.v), delta: deltaOf(T.v, P ? P.v : null, 'pct', 'up'), meta: 'vagas vendidas nos horários' }),
+    kpiHTML({ dot: 'c-p', label: 'Presentes', value: noData ? dash : nf(T.p), delta: deltaOf(T.p, P ? P.p : null, 'pct', 'up'), meta: `${nf(T.p + T.r)} atendidos com reposições` }),
+    kpiHTML({ dot: 'c-f', label: 'Faltas', value: noData ? dash : nf(T.f), delta: deltaOf(T.f, P ? P.f : null, 'pct', 'down'), meta: falt == null ? '' : nf(falt, 1) + '% dos vendidos' }),
+    kpiHTML({ dot: 'c-r', label: 'Reposições', value: noData ? dash : nf(T.r), delta: deltaOf(T.r, P ? P.r : null, 'pct', 'none'), meta: 'alunos que vieram repor aula' })
+  ];
+  const alerts = buildAlerts(cur, pres, key);
+  const rl = key === 'hoje' ? dayTag(t) : (dm(f) + ' a ' + dm(t));
+  const cov = (cur.n + cur.pending.length) ? ` · ${cur.n} de ${cur.n + cur.pending.length} dias lançados` : '';
+  let h = '';
+  if (S.demo) h += `<div class="banner"><span><b>Exemplo na tela.</b> Estes números são fictícios e não foram salvos.</span><button class="btn sm" type="button" id="demoOff">Sair do exemplo</button></div>`;
+  h += liveHTML(days);
+  h += callHTML();
+  h += `<div class="rangebar"><div class="seg" role="group" aria-label="Período">${RANGES.map(r => `<button type="button" data-range="${r[0]}" aria-pressed="${key === r[0]}">${r[1]}</button>`).join('')}</div><span class="rangelabel">${rl}${cov}${pr ? ` · comparando com ${key === 'hoje' ? dayTag(pr[0]) : dm(pr[0]) + ' a ' + dm(pr[1])}` : ''}</span></div>`;
+  if (noData) h += `<div class="card empty" style="padding:16px"><p><b>Não há lançamentos neste período.</b> <span class="sub">Escolha outro período ou preencha o dia.</span></p><button class="btn primary" type="button" data-fill="">Preencher dia</button></div>`;
+  h += `<div class="kpis">${kp.join('')}</div>`;
+  if (!noData && alerts.length) h += `<div class="card"><div class="chead" style="margin-bottom:10px"><h3>Pontos de atenção</h3></div><div class="alerts">${alerts.map(alertHTML).join('')}</div></div>`;
+  else if (noData && cur.pending.length && key !== 'hoje') h += `<div class="card"><div class="alerts">${alerts.map(alertHTML).join('')}</div></div>`;
+  if (!noData) {
+    const hm = HM[S.heat];
+    h += `<div class="grid2"><div class="card ch"><div class="chead"><h3>${key === 'hoje' ? 'Presença por período, hoje' : 'Presença por dia'}</h3><p>presentes ÷ vendidos · tracejado = meta</p></div><div class="chart" id="c1"></div></div>
+      <div class="card ch"><div class="chead"><h3>Vendas por horário</h3><p>vendidos ÷ vagas</p></div><div class="chart" id="c2"></div></div></div>
+      ${roomHTML(cur)}
+      <div class="card ch"><div class="chead"><h3>Mapa por dia e horário</h3><div class="seg" role="group" aria-label="Métrica do mapa">${Object.keys(HM).map(k => `<button type="button" data-heat="${k}" aria-pressed="${S.heat === k}">${HM[k].label}</button>`).join('')}</div></div>
+      <div class="legend"><span>0%</span><span class="ramp"></span><span id="hmax"></span><span style="margin-left:6px">${hm.desc}</span></div><div id="heat"></div></div>
+      ${weekHTML(days)}
+      <div class="card"><div class="chead sp"><h3>Dados e resumo</h3><button class="btn sm" type="button" id="copyMonth">Copiar resumo do mês</button></div><details class="tbl" style="margin-top:10px"><summary>Ver dados em tabela</summary>${tableHTML(cur)}</details></div>`;
+  }
+  root.innerHTML = h;
+  if (noData) return;
+  const c1 = $('#c1');
+  if (key === 'hoje') {
+    const dow = dowOf(t), todayDoc = days[iso(t)];
+    const items = slotsOf(dow).map(hr => {
+      const e = effSlot(todayDoc && todayDoc.s && todayDoc.s[pad(hr)], iso(t), dow, hr), v = rate(e.p, e.v);
+      return { label: pad(hr) + 'h', v, tip: `${hh(hr)} – ${hh(endOf(dow, hr))}\n` + (v == null ? 'Sem vendidos lançados' : `Presença ${nf(v, 0)}%\n${e.p} presentes de ${e.v} vendidos\n${e.r} reposições · ${e.f} faltas`) };
+    });
+    chartDraws.push(() => { c1.innerHTML = drawBars(c1, items, { unit: '%', pct: true, meta, aria: 'Presença por período hoje' }); });
+  } else {
+    const list = cur.list.slice(-90);
+    const pts = list.map(x => ({ label: dm(x.d), v: x.t ? rate(x.t.p, x.t.v) : null, tip: x.t ? `${dayTag(x.d)}\nPresença ${nf(rate(x.t.p, x.t.v) ?? 0, 1)}%\n${x.t.p} presentes de ${x.t.v} vendidos\n${x.t.r} reposições · ${x.t.f} faltas` : `${dayTag(x.d)}\nSem lançamento` }));
+    chartDraws.push(() => { c1.innerHTML = drawLine(c1, pts, { meta, aria: 'Presença por dia' }); });
+  }
+  const c2 = $('#c2');
+  const items2 = HOURS.map(hr => {
+    const o = cur.hour[hr], v = o ? rate(o.v, o.cap) : null;
+    return { label: pad(hr) + 'h', v, tip: `${hh(hr)} – ${hh(hr + 2)}\n` + (o ? `Vendas ${nf(v, 0)}% das vagas\nMédia de ${nf(o.v / o.n, 1)} vendidos de ${nf(o.cap / o.n, 0)} vagas\nem ${o.n} períodos` : 'Sem dados') };
+  });
+  chartDraws.push(() => { c2.innerHTML = drawBars(c2, items2, { unit: '%', pct: true, aria: 'Vendas por horário' }); });
+  chartDraws.forEach(fn => fn());
+  drawHeat(cur);
+}
+const redrawCharts = () => { if (S.tab === 'dashboards') chartDraws.forEach(fn => fn()); };
+
+function niceScale(v) {
+  if (v <= 0) return { max: 4, step: 1 };
+  for (const s of [1, 2, 5, 10, 20, 25, 50, 100, 200, 500]) if (Math.ceil(v / s) <= 5) return { max: Math.ceil(v / s) * s, step: s };
+  return { max: Math.ceil(v / 500) * 500, step: 500 };
+}
+function drawBars(el, items, o) {
+  const w = Math.max(260, el.clientWidth), h = 230, m = { l: 38, r: 10, t: 18, b: 26 }, iw = w - m.l - m.r, ih = h - m.t - m.b;
+  const vals = items.map(i => i.v).filter(v => v != null);
+  if (!vals.length) return '<p class="note">Sem dados neste período.</p>';
+  let max, step; if (o.pct) { max = 100; step = 25; } else { const n = niceScale(Math.max(...vals)); max = n.max; step = n.step; }
+  const y = v => m.t + ih - v / max * ih, n = items.length, band = iw / n, bw = Math.min(band * .6, 46);
+  let s = `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${esc(o.aria)}">`;
+  for (let t = 0; t <= max; t += step) s += `<line class="grid-l" x1="${m.l}" x2="${w - m.r}" y1="${y(t)}" y2="${y(t)}"/><text class="ax" x="${m.l - 6}" y="${y(t) + 4}" text-anchor="end">${t}${o.unit}</text>`;
+  items.forEach((it, i) => {
+    const x0 = m.l + band * i + (band - bw) / 2, cx = m.l + band * (i + .5);
+    s += `<g class="pt">`;
+    if (it.v != null && it.v > 0) {
+      const yt = y(Math.min(it.v, max)), yb = y(0), r = Math.min(4, bw / 2, yb - yt);
+      s += `<path class="bar" d="M${x0},${yb} V${yt + r} Q${x0},${yt} ${x0 + r},${yt} H${x0 + bw - r} Q${x0 + bw},${yt} ${x0 + bw},${yt + r} V${yb} Z"/>`;
+      if (bw >= 22 || n <= 8) s += `<text class="vl" x="${cx}" y="${yt - 5}" text-anchor="middle">${nf(it.v, o.dec || 0)}${o.unit}</text>`;
+    }
+    s += `<text class="ax" x="${cx}" y="${h - 8}" text-anchor="middle">${it.label}</text>`;
+    s += `<rect class="hit" x="${m.l + band * i}" y="${m.t}" width="${band}" height="${ih + 20}" data-tip="${esc(it.tip)}"/></g>`;
+  });
+  if (o.meta != null) s += `<line x1="${m.l}" x2="${w - m.r}" y1="${y(o.meta)}" y2="${y(o.meta)}" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 4"/><text class="ml" x="${w - m.r}" y="${y(o.meta) - 5}" text-anchor="end">Meta ${o.meta}%</text>`;
+  return s + '</svg>';
+}
+function drawLine(el, pts, o) {
+  const w = Math.max(260, el.clientWidth), h = 230, m = { l: 40, r: 14, t: 18, b: 26 }, iw = w - m.l - m.r, ih = h - m.t - m.b;
+  const vals = pts.filter(p => p.v != null).map(p => p.v);
+  if (!vals.length) return '<p class="note">Sem dados neste período.</p>';
+  const lo = Math.max(0, Math.floor((Math.min(...vals, o.meta) - 8) / 10) * 10), hi = 100;
+  const y = v => m.t + ih - (v - lo) / (hi - lo) * ih;
+  const n = pts.length, band = iw / n, x = i => m.l + band * (i + .5);
+  const st = (100 - lo) % 20 === 0 ? 20 : 10;
+  let s = `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${esc(o.aria)}">`;
+  for (let t = lo; t <= hi; t += st) s += `<line class="grid-l" x1="${m.l}" x2="${w - m.r}" y1="${y(t)}" y2="${y(t)}"/><text class="ax" x="${m.l - 6}" y="${y(t) + 4}" text-anchor="end">${t}%</text>`;
+  const segs = []; let cur = [];
+  pts.forEach((p, i) => { if (p.v == null) { if (cur.length) segs.push(cur); cur = []; } else cur.push([x(i), y(p.v)]); });
+  if (cur.length) segs.push(cur);
+  segs.forEach(sg => {
+    if (sg.length > 1) {
+      s += `<path d="M${sg.map(q => q.join(',')).join(' L')} L${sg[sg.length - 1][0]},${y(lo)} L${sg[0][0]},${y(lo)} Z" fill="var(--accent)" opacity=".12"/>`;
+      s += `<path d="M${sg.map(q => q.join(',')).join(' L')}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+    }
+  });
+  s += `<line x1="${m.l}" x2="${w - m.r}" y1="${y(o.meta)}" y2="${y(o.meta)}" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 4"/><text class="ml" x="${m.l + 4}" y="${y(o.meta) - 5}">Meta ${o.meta}%</text>`;
+  const k = Math.ceil(n / 7);
+  let last = -1; pts.forEach((p, i) => { if (p.v != null) last = i; });
+  pts.forEach((p, i) => {
+    s += `<g class="pt"><line class="xh" x1="${x(i)}" x2="${x(i)}" y1="${m.t}" y2="${m.t + ih}"/>`;
+    if (p.v != null) {
+      if (n <= 31 || i === last) s += `<circle cx="${x(i)}" cy="${y(p.v)}" r="${i === last ? 5 : 3.5}" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/>`;
+      s += `<circle class="hv" cx="${x(i)}" cy="${y(p.v)}" r="6"/>`;
+    }
+    if (i % k === 0) s += `<text class="ax" x="${x(i)}" y="${h - 8}" text-anchor="middle">${p.label}</text>`;
+    s += `<rect class="hit" x="${m.l + band * i}" y="${m.t}" width="${band}" height="${ih + 20}" data-tip="${esc(p.tip)}"/></g>`;
+  });
+  if (last >= 0) s += `<text class="vl" x="${Math.min(x(last), w - m.r)}" y="${y(pts[last].v) - 10}" text-anchor="${last > n / 2 ? 'end' : 'middle'}">${nf(pts[last].v, 0)}%</text>`;
+  return s + '</svg>';
+}
+function drawHeat(cur) {
+  const fn = HM[S.heat].fn; let max = 0; const val = {};
+  HOURS.forEach(hr => { for (let dw = 0; dw < 6; dw++) {
+    const c = cur.cell[dw + '-' + hr], r = c ? fn(c) : null;
+    if (r != null) { val[dw + '-' + hr] = r; if (r > max) max = r; }
+  } });
+  const top = S.heat === 'faltas' ? Math.max(10, Math.ceil(max / 5) * 5) : 100;
+  $('#hmax').textContent = nf(top, 0) + '%';
+  let g = '<div class="heat" role="table" aria-label="Mapa por dia da semana e horário"><div></div>' + DS.slice(0, 6).map(d => `<div class="hh">${d}</div>`).join('');
+  HOURS.forEach(hr => {
+    g += `<div class="hr">${pad(hr)}h</div>`;
+    for (let dw = 0; dw < 6; dw++) {
+      if (!slotsOf(dw).includes(hr) && !cur.cell[dw + '-' + hr]) { g += '<div class="hc na" aria-label="Sem aula"></div>'; continue; }
+      const c = cur.cell[dw + '-' + hr], r = val[dw + '-' + hr];
+      if (r == null) { g += '<div class="hc empty">—</div>'; continue; }
+      const p = Math.round(8 + 92 * Math.min(r, top) / top);
+      const tp = `${DL[dw]} · ${hh(hr)} – ${hh(endOf(dw, hr))}\nPresença ${nf(rate(c.p, c.v) ?? 0, 0)}% (${c.p} de ${c.v} vendidos)\nFaltas ${nf(rate(c.f, c.v) ?? 0, 0)}% (${c.f})\nVendas ${nf(rate(c.v, c.cap) ?? 0, 0)}% (${c.v} de ${c.cap} vagas)\nSala real ${nf(rate(c.p + c.r, c.cap) ?? 0, 0)}% · reposições ${c.r}`;
+      g += `<div class="hc${p > 55 ? ' hi' : ''}" style="--p:${p}" data-tip="${esc(tp)}">${nf(r, 0)}%</div>`;
+    }
+  });
+  $('#heat').innerHTML = g + '</div>';
+}
+function tableHTML(cur) {
+  const rows = cur.byDay.slice().reverse().slice(0, 120).map(x => `<tr><td>${dayTag(x.d)}</td><td>${x.t.cap}</td><td>${x.t.v}</td><td>${x.t.p}</td><td>${x.t.r}</td><td>${x.t.f}</td><td>${nf(rate(x.t.p, x.t.v) ?? 0, 0)}%</td></tr>`).join('');
+  const T = cur.t;
+  return `<div class="tablewrap"><table><thead><tr><th>Dia</th><th>Vagas</th><th>Vendidos</th><th>Presentes</th><th>Reposição</th><th>Faltas</th><th>Presença</th></tr></thead><tbody>${rows}<tr><td><b>Total</b></td><td><b>${T.cap}</b></td><td><b>${T.v}</b></td><td><b>${T.p}</b></td><td><b>${T.r}</b></td><td><b>${T.f}</b></td><td><b>${nf(rate(T.p, T.v) ?? 0, 0)}%</b></td></tr></tbody></table></div>`;
+}
+
+/* ---------- aba Preencher: chamada rápida ---------- */
+const counted = s => s.v + s.p + s.r + s.f > 0;
+const snapOf = m => JSON.stringify([m.off, m.obs, m.slots.map(s => [s.cap, s.v, s.p, s.r, s.f, s.c, s.n])]);
+function sugOf(date, k, dow) {
+  const pw = S.days[iso(addD(pISO(date), -7))];
+  return (pw && !pw.off && pw.s && pw.s[k]) ? normSlot(pw.s[k], dow).v : 0;
+}
+function pickSel(date, dow, slots) {
+  if (date === iso(today())) {
+    const n = slots.find(s => slotNow(date, dow, s.h)); if (n) return n.k;
+    const p = slots.find(s => slotEnded(date, dow, s.h) && !counted(s)); if (p) return p.k;
+  }
+  const e = slots.find(s => !counted(s));
+  return (e || slots[0] || {}).k || null;
+}
+function selSlot(k) {
+  if (!D) return; D.sel = k;
+  document.querySelectorAll('#fillForm .qrow').forEach(r => r.classList.toggle('sel', r.dataset.k === k));
+  paintTabs();
+  const t = $('#stabs .stab.sel'); if (t && t.offsetParent) t.scrollIntoView({ inline: 'center', block: 'nearest' });
+}
+const isPhone = () => matchMedia('(max-width: 700px)').matches;
+function advance(s) { if (!isPhone() || !D) return; const n = D.slots[D.slots.indexOf(s) + 1]; if (n) selSlot(n.k); }
+function paintTabs() {
+  const el = $('#stabs'); if (!el || !D) return;
+  el.innerHTML = D.slots.map(s => {
+    const st = rowState(s), used = counted(s), cls = !used ? (st.tag === 'Pendente' ? 'miss' : '') : st.cls;
+    return `<button type="button" class="stab ${cls}${s.k === D.sel ? ' sel' : ''}" data-sel="${s.k}" aria-pressed="${s.k === D.sel}"><b>${pad(s.h)}h</b><span>${used ? (s.v ? s.p + '/' + s.v : '•') : (st.tag === 'Pendente' ? 'pendente' : '—')}</span></button>`;
+  }).join('');
+}
+function buildDay(date) {
+  const d = pISO(date), dow = dowOf(d), doc = S.days[date];
+  const slots = slotHours(dow, doc).map(hr => {
+    const k = pad(hr), raw = doc && doc.s && doc.s[k], e = effSlot(raw, date, dow, hr);
+    return { k, h: hr, e: endOf(dow, hr), cap: raw ? e.cap : capDef(dow), v: e.v, p: e.p, r: e.r, f: e.f, c: e.c, n: e.n, sug: sugOf(date, k, dow), manual: raw ? clamp(raw.f) > Math.max(0, e.v - e.p) : false };
+  });
+  const m = { date, dow, off: !!(doc && doc.off), obs: (doc && doc.obs) || '', slots, exists: !!doc, open: {}, touched: false, saveState: 'idle', savedAt: null };
+  m.sel = pickSel(date, dow, slots);
+  m.init = snapOf(m);
+  return m;
+}
+const formFocused = () => { const a = document.activeElement; return !!(a && a.closest && a.closest('#fillForm')); };
+function renderFill() {
+  const root = $('#view-fill');
+  if (!S.loaded) { root.innerHTML = '<div class="card empty"><p class="sub">Carregando dados…</p></div>'; return; }
+  if (!$('#fillForm')) root.innerHTML = '<div id="fillBar" class="qbar"></div><div id="fillForm" class="view"></div><div id="fillCall"></div><div id="fillRecent"></div><div id="fillSettings"></div>';
+  if (!D) { D = buildDay(defaultDate()); renderForm(); }
+  else if (!D.touched && !formFocused()) { const nd = buildDay(D.date); if (snapOf(nd) !== D.init || nd.exists !== D.exists) { nd.sel = D.sel || nd.sel; D = nd; renderForm(); } }
+  renderRecent(); renderCall();
+  if (!($('#fillSettings').contains(document.activeElement))) renderSettings();
+}
+async function gotoDate(date) {
+  if (!(await flushSave())) { toast('Não consegui salvar o dia atual. Tente de novo antes de trocar de dia.'); const i = $('#fDate'); if (i && D) i.value = D.date; return; }
+  if (!$('#fillForm')) { renderAll(); }
+  D = buildDay(date); renderForm(); renderRecent();
+}
+function qfHTML(s, m, label, cls) {
+  const id = 'q-' + s.k + '-' + m;
+  return `<div class="qf ${m}"><label for="${id}"><span class="dotc ${cls}"></span>${label}</label><div class="qs"><button type="button" data-act="dec" tabindex="-1" aria-label="Diminuir ${label}">−</button><input id="${id}" data-m="${m}" type="number" inputmode="numeric" min="0" max="999" value="${s[m]}" aria-label="${label} das ${hh(s.h)}"><button type="button" data-act="inc" tabindex="-1" aria-label="Aumentar ${label}">+</button></div></div>`;
+}
+function rowHTML(s) {
+  const open = !!D.open[s.k];
+  return `<div class="qrow${s.k === D.sel ? ' sel' : ''}" data-k="${s.k}"><div class="qgrid"><div class="qtime"><b>${hh(s.h)} – ${hh(s.e)}</b><span class="qtag" hidden></span></div>${qfHTML(s, 'v', 'Vendidos', 'c-x')}${qfHTML(s, 'p', 'Presentes', 'c-p')}${qfHTML(s, 'r', 'Reposição', 'c-r')}${qfHTML(s, 'f', 'Faltas', 'c-f')}<div class="qstat"><span class="qpct">—</span><span class="qsub"></span></div><div class="qact"><button class="btn sm" type="button" data-q="all">Todos presentes</button><button class="btn sm" type="button" data-q="det" aria-expanded="${open}">${open ? 'Fechar' : 'Detalhes'}</button></div></div>
+    <p class="qwarn" hidden></p>${s.sug > 0 ? `<div class="qsug" hidden><span>Semana passada neste horário: <b>${s.sug}</b> vendidos</span><button class="btn sm" type="button" data-q="sug">Usar ${s.sug}</button></div>` : ''}
+    <div class="qdet" ${open ? '' : 'hidden'}><div class="field"><label for="q-${s.k}-cap">Alunos (vagas do horário)</label><div class="qs"><button type="button" data-act="dec" tabindex="-1" aria-label="Diminuir vagas">−</button><input id="q-${s.k}-cap" data-m="cap" type="number" inputmode="numeric" min="1" max="999" value="${s.cap}"><button type="button" data-act="inc" tabindex="-1" aria-label="Aumentar vagas">+</button></div></div><div class="field"><label for="q-${s.k}-c">Cursos ou turmas (opcional)</label><input class="fcur" id="q-${s.k}-c" data-m="c" type="text" maxlength="120" value="${esc(s.c)}"></div><div class="field wide"><label for="q-${s.k}-n">Quem faltou (opcional)</label><input class="fcur" id="q-${s.k}-n" data-m="n" type="text" maxlength="300" autocomplete="off" value="${esc(s.n)}" placeholder="Ex.: Ana Souza, João Lima"><div class="nsug" hidden></div><span class="sub" style="font-size:12px">Digite nome e sobrenome, separados por vírgula. Quem acumula 2 faltas aparece em Chamar hoje.</span></div><div class="field"><button class="btn sm" type="button" data-q="none">Ninguém veio</button></div></div><div class="qnav"><button class="btn" type="button" data-nav="-1">‹ Anterior</button><button class="btn primary" type="button" data-nav="1">Próximo ›</button></div></div>`;
+}
+function renderForm() {
+  const date = D.date, d = pISO(date), isSun = D.dow === 6, tdk = iso(today());
+  $('#fillBar').innerHTML = `<div class="l"><button class="btn icon" type="button" data-d="-1" aria-label="Dia anterior">‹</button><input type="date" id="fDate" value="${date}" aria-label="Data"><button class="btn icon" type="button" data-d="1" aria-label="Próximo dia">›</button><button class="btn sm" type="button" data-d="0">Hoje</button><span id="dChip"></span></div><div class="sv" id="sv" role="status"><i></i><span id="svTx"></span></div>`;
+  $('#dChip').innerHTML = `<span class="chip ${date === tdk ? 'acc' : ''}">${DL[D.dow]}${date === tdk ? ', hoje' : ''}</span>`;
+  $('#fillForm').innerHTML = isSun
+    ? '<div class="card empty" style="padding:16px"><b>Domingo não tem aulas.</b><span class="sub">Escolha outro dia na data acima.</span></div>'
+    : `<label class="offsw"><input type="checkbox" id="fOff" ${D.off ? 'checked' : ''}> Dia sem aula (feriado ou recesso)</label>
+       <div id="pendBar"></div><div class="qlist" id="qlist" ${D.off ? 'hidden' : ''}><div class="stabs" id="stabs" role="group" aria-label="Horários do dia"></div><div class="qhead"><span>Horário</span><span>Vendidos</span><span>Presentes</span><span>Reposição</span><span>Faltas</span><span>Status</span><span></span></div>${D.slots.map(rowHTML).join('')}</div>
+       <div class="qtot" id="qtot"></div>
+       <details class="card" ${D.obs ? 'open' : ''}><summary style="cursor:pointer;font-weight:600">Observações do dia</summary><textarea class="fobs" id="fObs" rows="2" maxlength="400" style="margin-top:10px" placeholder="Ex.: chuva forte, professor ausente, evento na escola">${esc(D.obs)}</textarea></details>`;
+  if (!isSun) { D.slots.forEach(paintRow); paintTotals(); }
+  paintSave();
+}
+function rowState(s) {
+  const ended = slotEnded(D.date, D.dow, s.h), closed = slotClosed(D.date, D.dow, s.h), now = slotNow(D.date, D.dow, s.h), used = counted(s), isToday = D.date === iso(today());
+  const pct = s.v > 0 ? Math.round(s.p / s.v * 100) : null;
+  let cls = '', sub = `${s.cap - s.v >= 0 ? s.cap - s.v : 0} vagas livres`, tag = '', tagCls = '';
+  if (used) {
+    if (s.v === 0 || s.p + s.f > s.v || s.v > s.cap) cls = 'chk';
+    else if (!closed) cls = 'live';
+    else cls = pct >= S.cfg.meta ? 'ok' : 'low';
+    sub = closed ? `Sala real ${s.p + s.r} de ${s.cap} · ${Math.max(0, s.cap - s.p - s.r)} lugares vagos` : (s.v - s.p - s.f > 0 ? `Faltam chegar ${s.v - s.p - s.f}${isToday ? ' · viram falta às ' + clockOf(closeAt(D.dow, s.h)) : ''}` : 'Todos contabilizados');
+  }
+  if (now) { tag = 'Agora'; tagCls = 'now'; } else if (isToday && ended && !used) { tag = 'Pendente'; tagCls = 'miss'; }
+  return { cls, pct, sub, tag, tagCls, now };
+}
+function paintRow(s) {
+  const row = $(`.qrow[data-k="${s.k}"]`); if (!row) return;
+  const st = rowState(s);
+  row.classList.toggle('now', st.now);
+  const p = row.querySelector('.qpct'); p.className = 'qpct ' + st.cls; p.textContent = st.pct == null ? '—' : st.pct + '%';
+  row.querySelector('.qsub').textContent = st.sub;
+  const tg = row.querySelector('.qtag'); tg.hidden = !st.tag; tg.className = 'qtag ' + st.tagCls; tg.textContent = st.tag;
+  let msg = '';
+  if (s.v > s.cap) msg = `Vendidos (${s.v}) passam as vagas do horário (${s.cap}).`;
+  else if (s.p + s.f > s.v && s.v > 0) msg = `Presentes + faltas (${s.p + s.f}) passam os vendidos (${s.v}). Confira os números.`;
+  else if (s.v === 0 && s.p + s.f > 0) msg = 'Informe quantos foram vendidos para este horário.';
+  const w = row.querySelector('.qwarn'); w.hidden = !msg; w.textContent = msg;
+  const sg = row.querySelector('.qsug'); if (sg) sg.hidden = !(s.sug > 0 && !counted(s));
+  paintTabs();
+}
+function paintTotals() {
+  paintPend();
+  const el = $('#qtot'); if (!el) return;
+  const t = { v: 0, p: 0, r: 0, f: 0 }, n = D.slots.filter(counted).length;
+  D.slots.forEach(s => ['v', 'p', 'r', 'f'].forEach(m => t[m] += s[m]));
+  el.innerHTML = D.off ? '<span>Dia marcado como sem aula</span>' : `<span>Vendidos <b>${t.v}</b></span><span>Presentes <b>${t.p}</b></span><span>Reposição <b>${t.r}</b></span><span>Faltas <b>${t.f}</b></span><span>Presença <b>${t.v ? nf(t.p / t.v * 100, 0) + '%' : '—'}</b></span><span>Horários lançados <b>${n} de ${D.slots.length}</b></span>`;
+}
+/* ---------- avisos da chamada ---------- */
+function paintPend() {
+  const el = $('#pendBar'); if (!el || !D) return;
+  let h = '';
+  if (!D.off && D.date === iso(today())) {
+    const miss = D.slots.filter(s => slotEnded(D.date, D.dow, s.h) && !counted(s));
+    if (miss.length) h += `<div class="banner"><span><b>${miss.length === 1 ? 'Falta lançar 1 horário' : 'Faltam lançar ' + miss.length + ' horários'} de hoje:</b> ${miss.map(s => pad(s.h) + 'h').join(', ')}</span><button class="btn sm" type="button" data-goto="${miss[0].k}">Ir para ${pad(miss[0].h)}h</button></div>`;
+  }
+  if (!D.off) {
+    const n = D.slots.filter(s => s.sug > 0 && !counted(s)).length;
+    if (n) h += `<div class="banner sugb"><span><b>${n === 1 ? '1 horário pode usar' : n + ' horários podem usar'} os vendidos da semana passada.</b> Você confere e ajusta.</span><button class="btn sm" type="button" data-sugall="1">Preencher vendidos</button></div>`;
+  }
+  if (el.innerHTML !== h) el.innerHTML = h;
+}
+
+/* ---------- nomes de quem faltou e lista Chamar hoje ---------- */
+const CALL_N = 2, CALL_DAYS = 14;
+const nkey = s => String(s).trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ');
+const nameList = s => String(s || '').split(/[,;\n]+/).map(x => x.trim().replace(/\s+/g, ' ')).filter(Boolean);
+const titleCase = s => s.toLowerCase().replace(/(^|\s)(\S)/g, (m, a, b) => a + b.toUpperCase());
+function knownNames() {
+  const m = {};
+  Object.keys(S.days).sort().forEach(k => { const d = S.days[k]; if (!d || !d.s) return; Object.keys(d.s).forEach(h => nameList(d.s[h] && d.s[h].n).forEach(n => { const q = nkey(n); if (!m[q]) m[q] = n; })); });
+  return m;
+}
+function canonNames(v) {
+  const kn = knownNames(), seen = {}, out = [];
+  nameList(v).forEach(n => { const q = nkey(n); if (seen[q]) return; seen[q] = 1; out.push(kn[q] || (n === n.toLowerCase() || n === n.toUpperCase() ? titleCase(n) : n)); });
+  return out.join(', ');
+}
+function paintNameSug(row, inp) {
+  const box = row.querySelector('.nsug'); if (!box) return;
+  const v = inp.value, i = Math.max(v.lastIndexOf(','), v.lastIndexOf(';')), last = nkey(v.slice(i + 1));
+  if (!last || document.activeElement !== inp) { box.hidden = true; box.innerHTML = ''; return; }
+  const have = {}; nameList(v.slice(0, i + 1)).forEach(n => { have[nkey(n)] = 1; });
+  const kn = knownNames(), list = Object.keys(kn).filter(q => (' ' + q).includes(' ' + last) && !have[q] && q !== last).slice(0, 6);
+  box.hidden = !list.length;
+  box.innerHTML = list.map(q => `<button type="button" class="nchip" data-nm="${esc(kn[q])}">${esc(kn[q])}</button>`).join('');
+}
+function callList() {
+  const td = today(), from = iso(addD(td, -(CALL_DAYS - 1))), to = iso(td), av = S.cfg.avisos || {}, res = {};
+  Object.keys(S.days).forEach(k => {
+    if (k < from || k > to) return;
+    const d = S.days[k]; if (!d || d.off || !d.s) return;
+    Object.keys(d.s).forEach(h => nameList(d.s[h] && d.s[h].n).forEach(n => {
+      const q = nkey(n); if (av[q] && k <= av[q]) return;
+      const o = res[q] = res[q] || { name: n, set: {}, last: '' }; o.set[k + h] = 1; if (k > o.last) o.last = k;
+    }));
+  });
+  const kn = knownNames();
+  return Object.keys(res).map(q => ({ q, name: kn[q] || res[q].name, n: Object.keys(res[q].set).length, last: res[q].last })).filter(x => x.n >= CALL_N).sort((a, b) => b.n - a.n || (a.last < b.last ? 1 : -1));
+}
+function callHTML() {
+  const L = callList(); if (!L.length) return '';
+  return `<div class="card"><div class="chead sp"><div><h3>Chamar hoje</h3><p>${L.length === 1 ? '1 aluno com' : L.length + ' alunos com'} ${CALL_N} ou mais faltas nos últimos ${CALL_DAYS} dias</p></div><button class="btn sm" type="button" id="copyCall">Copiar nomes</button></div><div class="drows">${L.map(x => `<div class="drow call"><span class="dn">${esc(x.name)}</span><span class="chip warn">${x.n} faltas</span><span class="tt">última falta em ${dm(pISO(x.last))}</span><button class="btn sm" type="button" data-aviso="${esc(x.q)}">Já avisei</button></div>`).join('')}</div></div>`;
+}
+function renderCall() { const el = $('#fillCall'); if (el) el.innerHTML = callHTML(); }
+async function markAviso(q) {
+  const cur = S.cfg.avisos || {}, lim = iso(addD(today(), -60)), m = {};
+  Object.keys(cur).forEach(k => { if (cur[k] >= lim) m[k] = cur[k]; });
+  m[q] = iso(today());
+  try { await persistCfg('avisos', m); toast('Anotado. O aluno sai da lista até faltar de novo.'); } catch (e) { toast(errMsg(e)); }
+  renderAll();
+}
+
+function paintSave() {
+  const el = $('#sv'); if (!el || !D) return;
+  const m = { idle: ['', ''], pending: ['pending', 'Alterações pendentes…'], saving: ['saving', 'Salvando…'], saved: ['saved', 'Salvo às ' + (D.savedAt ? pad(D.savedAt.getHours()) + ':' + pad(D.savedAt.getMinutes()) : '')], error: ['error', 'Não salvou. Clique para tentar de novo'] }[D.saveState];
+  el.hidden = D.saveState === 'idle'; el.className = 'sv ' + m[0]; $('#svTx').textContent = m[1];
+  el.style.cursor = D.saveState === 'error' ? 'pointer' : ''; el.dataset.retry = D.saveState === 'error' ? '1' : '';
+}
+function formToDoc() {
+  if (D.off) return { off: true, t: Date.now() };
+  const s = {}; let any = false;
+  D.slots.forEach(x => {
+    let f = x.f;
+    if (!x.manual && x.p > 0 && slotClosed(D.date, D.dow, x.h)) f = Math.max(0, x.v - x.p);
+    if (x.v + x.p + x.r + f > 0 || x.c.trim() || x.n.trim()) {
+      const e = { cap: x.cap, v: x.v, p: x.p, r: x.r, f }; if (x.c.trim()) e.c = x.c.trim(); if (x.n.trim()) e.n = x.n.trim();
+      s[x.k] = e; if (x.v + x.p + x.r + f > 0) any = true;
+    }
+  });
+  if (!any) return null;
+  const doc = { s, t: Date.now() }; if (D.obs.trim()) doc.obs = D.obs.trim();
+  return doc;
+}
+function scheduleSave() {
+  if (!D) return;
+  D.touched = true; D.saveState = 'pending'; paintSave();
+  clearTimeout(saveT); saveT = setTimeout(doSave, 700);
+}
+async function doSave() {
+  clearTimeout(saveT);
+  if (!D) return true;
+  if (savingP) { saveAgain = true; return savingP; }
+  const m = D, doc = formToDoc();
+  savingP = (async () => {
+    m.saveState = 'saving'; if (D === m) paintSave();
+    try {
+      if (doc) { await persistDay(m.date, doc); m.exists = true; S.demo = false; }
+      else if (m.exists) { await persistDelete(m.date); m.exists = false; }
+      m.saveState = 'saved'; m.savedAt = new Date();
+    } catch (e) { m.saveState = 'error'; toast(errMsg(e)); }
+    if (D === m) { paintSave(); renderRecent(); renderCall(); } paintConn();
+  })();
+  await savingP; savingP = null;
+  if (saveAgain) { saveAgain = false; return doSave(); }
+  return !D || D.saveState !== 'error';
+}
+async function flushSave() {
+  if (!D) return true;
+  if (D.saveState === 'pending') return doSave();
+  if (savingP) { await savingP; return D.saveState !== 'error'; }
+  return D.saveState !== 'error';
+}
+function onField(inp, normalize) {
+  const row = inp.closest('.qrow'), s = D.slots.find(x => x.k === row.dataset.k), m = inp.dataset.m;
+  if (m === 'c') { s.c = inp.value; scheduleSave(); return; }
+  if (m === 'n') {
+    if (normalize) { s.n = canonNames(inp.value); inp.value = s.n; } else s.n = inp.value;
+    paintNameSug(row, inp); scheduleSave(); return;
+  }
+  s[m] = clamp(inp.value);
+  if (m === 'f') s.manual = s.f !== Math.max(0, s.v - s.p);
+  else if ((m === 'v' || m === 'p') && !s.manual && s.p > 0 && slotClosed(D.date, D.dow, s.h)) { s.f = Math.max(0, s.v - s.p); row.querySelector('[data-m="f"]').value = s.f; }
+  if (normalize) inp.value = s[m];
+  paintRow(s); paintTotals(); scheduleSave();
+}
+
+/* ---------- últimos dias e ajustes ---------- */
+function renderRecent() {
+  const el = $('#fillRecent'); if (!el) return;
+  const td = today(), key = iso(td), rows = []; let d = td;
+  while (rows.length < 14) { if (dowOf(d) !== 6) rows.push(d); d = addD(d, -1); }
+  el.innerHTML = `<div class="card"><div class="chead"><h3>Últimos dias</h3><p>Clique em Editar para corrigir qualquer dia</p></div><div class="drows">` + rows.map(r => {
+    const k = iso(r), dc = S.days[k], isT = k === key;
+    let ch, tt = '', lb = 'Preencher';
+    if (!dc || (!dc.off && !hasData(dc, k))) ch = isT ? '<span class="chip warn">Hoje · pendente</span>' : '<span class="chip warn">Pendente</span>';
+    else if (dc.off) { ch = '<span class="chip acc">Sem aula</span>'; lb = 'Editar'; }
+    else { const t = docTot(dc, k); ch = '<span class="chip ok">Preenchido</span>'; lb = 'Editar'; tt = `Vendidos <b>${t.v}</b> · Presentes <b>${t.p}</b> · Reposição <b>${t.r}</b> · Faltas <b>${t.f}</b> · <b>${t.v ? nf(t.p / t.v * 100, 0) + '%' : '—'}</b>`; }
+    return `<div class="drow"><span class="dn">${dayTag(r)}</span>${ch}<span class="tt">${tt}</span><button class="btn sm" type="button" data-fill="${k}">${lb}</button></div>`;
+  }).join('') + `</div></div>`;
+}
+function renderSettings() {
+  const el = $('#fillSettings'); if (!el) return;
+  const leg = S.mode === 'db' ? legacyDays() : null, canImport = leg && ls.get(LSI) !== '1';
+  const num = (id, label, desc, val, unit) => `<div class="srow"><div class="lb"><b>${label}</b><span class="sub">${desc}</span></div><div class="actions" style="align-items:center"><input class="numin" id="${id}" type="number" min="1" max="${id === 'metaIn' ? 100 : id === 'tolIn' ? 90 : 999}" value="${val}" aria-label="${label}"><span class="sub">${unit}</span></div></div>`;
+  el.innerHTML = `<div class="card settings"><h3>Ajustes e dados</h3>
+    <div class="srow"><div class="lb"><b>Nome da escola</b><span class="sub">Aparece no topo da página.</span></div><input class="textin" id="escolaIn" type="text" maxlength="60" value="${esc(S.cfg.escola)}" placeholder="Ex.: Escola Exemplo" aria-label="Nome da escola"></div>
+    <div class="srow"><div class="lb"><b>Cor da página</b><span class="sub">Muda botões, gráficos e destaques.</span></div><div class="swatches" role="group" aria-label="Cor da página">${Object.keys(PAL).map(k => `<button class="sw" type="button" data-cor="${k}" style="background:${PAL[k].l[0]}" aria-pressed="${S.cfg.cor === k}" aria-label="${PAL[k].n}" title="${PAL[k].n}"></button>`).join('')}</div></div>
+    <div class="srow"><div class="lb"><b>Logo da escola</b><span class="sub">Imagem PNG ou JPG. Reduzida automaticamente.</span></div><div class="actions" style="align-items:center">${S.logo ? `<img class="logoprev" src="${esc(S.logo)}" alt="Logo atual"><button class="btn sm danger" type="button" id="logoDel">Remover</button>` : ''}<label class="btn sm" for="logoIn" style="cursor:pointer">${S.logo ? 'Trocar' : 'Enviar logo'}</label><input id="logoIn" type="file" accept="image/*" style="position:absolute;width:1px;height:1px;opacity:0"></div></div>
+    ${num('metaIn', 'Meta de presença', 'Usada nos indicadores e alertas do dashboard.', S.cfg.meta, '%')}
+    ${num('capSemIn', 'Vagas por horário, segunda a sexta', 'Já vem preenchido em cada horário ao abrir o dia.', S.cfg.capSem, 'vagas')}
+    ${num('capSabIn', 'Vagas por horário, sábado', 'Vale para novos lançamentos. Dias já salvos mantêm as vagas que tinham.', S.cfg.capSab, 'vagas')}
+    ${num('tolIn', 'Faltas automáticas', 'Minutos depois do início do horário em que quem foi vendido e não veio vira falta. Vale quando há presentes lançados.', S.cfg.tol, 'min')}
+    <div class="srow"><div class="lb"><b>Copiar para o Excel</b><span class="sub">Últimos 60 dias, um período por linha. Cole direto em uma planilha.</span></div><button class="btn" type="button" id="copyXls">Copiar tabela</button></div>
+    ${canImport ? `<div class="srow"><div class="lb"><b>Lançamentos da versão anterior</b><span class="sub">Encontrei ${Object.keys(leg).length} dias salvos neste navegador. Se você usou o exemplo, esses números também entram.</span></div><button class="btn" type="button" id="importOld">Importar para os dados compartilhados</button></div>` : ''}
+    ${S.mode === 'local' ? '<div class="alert warn"><span class="ic">!</span><div class="tx"><b>Os dados estão só neste navegador.</b><div class="dt">Se a página não puder guardar dados compartilhados, outras pessoas e outros aparelhos não veem os lançamentos. Copie para o Excel de vez em quando.</div></div></div>' : ''}
+    <textarea class="out" id="xlsOut" readonly hidden aria-label="Texto para copiar"></textarea></div>`;
+}
+function resizeLogo(file) {
+  return new Promise((res, rej) => {
+    const fr = new FileReader();
+    fr.onerror = () => rej(new Error('leitura'));
+    fr.onload = () => {
+      const im = new Image();
+      im.onerror = () => rej(new Error('imagem'));
+      im.onload = () => {
+        const k = Math.min(1, 96 / im.height, 320 / im.width), w = Math.max(1, Math.round(im.width * k)), h = Math.max(1, Math.round(im.height * k));
+        const c = document.createElement('canvas'); c.width = w; c.height = h;
+        c.getContext('2d').drawImage(im, 0, 0, w, h);
+        let out = c.toDataURL('image/png'); if (out.length > 150000) out = c.toDataURL('image/jpeg', .85);
+        out.length > 200000 ? rej(new Error('grande')) : res(out);
+      };
+      im.src = fr.result;
+    };
+    fr.readAsDataURL(file);
+  });
+}
+
+/* ---------- eventos ---------- */
+const form = $('#view-fill');
+form.addEventListener('click', async e => {
+  const st = e.target.closest('[data-act]');
+  if (st && D) { const inp = st.closest('.qs').querySelector('input'); inp.value = clamp(clamp(inp.value) + (st.dataset.act === 'inc' ? 1 : -1)); onField(inp, true); return; }
+  const sl = e.target.closest('[data-sel]');
+  if (sl && D) { selSlot(sl.dataset.sel); return; }
+  const nv = e.target.closest('[data-nav]');
+  if (nv && D) { const j = D.slots.findIndex(s => s.k === D.sel) + Number(nv.dataset.nav); if (D.slots[j]) { selSlot(D.slots[j].k); const b = $('#stabs'); if (b && b.offsetParent) b.scrollIntoView({ block: 'nearest' }); } else toast(j < 0 ? 'Este é o primeiro horário do dia.' : 'Este é o último horário do dia.'); return; }
+  const gt = e.target.closest('[data-goto]');
+  if (gt && D) { selSlot(gt.dataset.goto); const i = document.querySelector(`.qrow[data-k="${gt.dataset.goto}"] [data-m="v"]`); if (i) { i.scrollIntoView({ block: 'center', behavior: 'smooth' }); i.focus(); } return; }
+  if (e.target.closest('[data-sugall]') && D) {
+    D.slots.forEach(s => { if (s.sug > 0 && !counted(s)) { s.v = s.sug; const i = document.querySelector(`.qrow[data-k="${s.k}"] [data-m="v"]`); if (i) i.value = s.v; paintRow(s); } });
+    paintTotals(); scheduleSave(); toast('Vendidos preenchidos com os da semana passada. Confira e ajuste.'); return;
+  }
+  const q = e.target.closest('[data-q]');
+  if (q && D) {
+    const row = q.closest('.qrow'), s = D.slots.find(x => x.k === row.dataset.k);
+    if (q.dataset.q === 'sug') { s.v = s.sug; row.querySelector('[data-m="v"]').value = s.v; paintRow(s); paintTotals(); scheduleSave(); }
+    else if (q.dataset.q === 'none') {
+      if (!s.v) { toast('Informe os vendidos deste horário primeiro.'); return; }
+      s.p = 0; s.f = s.v; s.manual = false; ['p', 'f'].forEach(m => { row.querySelector(`[data-m="${m}"]`).value = s[m]; }); paintRow(s); paintTotals(); scheduleSave();
+    }
+    else if (q.dataset.q === 'all') { s.p = s.v; s.f = 0; s.manual = false; ['p', 'f'].forEach(m => { row.querySelector(`[data-m="${m}"]`).value = s[m]; }); paintRow(s); paintTotals(); scheduleSave(); }
+    else { D.open[s.k] = !D.open[s.k]; const det = row.querySelector('.qdet'); det.hidden = !D.open[s.k]; q.textContent = D.open[s.k] ? 'Fechar' : 'Detalhes'; q.setAttribute('aria-expanded', String(!!D.open[s.k])); }
+    if ((q.dataset.q === 'all' || q.dataset.q === 'none') && s.v > 0) advance(s);
+    return;
+  }
+  const dn = e.target.closest('[data-d]');
+  if (dn && D) { const v = Number(dn.dataset.d); gotoDate(v === 0 ? defaultDate() : iso(addD(pISO(D.date), v))); return; }
+  if (e.target.closest('#sv') && D && D.saveState === 'error') { doSave(); return; }
+  const cor = e.target.closest('[data-cor]');
+  if (cor) { persistCfg('cor', cor.dataset.cor).then(() => { paintBrand(); renderSettings(); }).catch(er => toast(errMsg(er))); return; }
+  if (e.target.id === 'logoDel') { persistLogo('').then(() => { paintBrand(); renderSettings(); toast('Logo removido.'); }).catch(er => toast(errMsg(er))); return; }
+  if (e.target.id === 'copyXls') {
+    const lines = ['Data\tDia\tInício\tFim\tVagas\tVendidos\tPresentes\tReposição\tFaltas\tPresença\tCursos'];
+    const td = today();
+    for (let d = addD(td, -59); d <= td; d = addD(d, 1)) {
+      const dow = dowOf(d), key = iso(d), doc = S.days[key]; if (dow === 6 || !hasData(doc, key)) continue;
+      slotsOfDoc(doc, key).forEach(s => {
+        lines.push([pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear(), DS[dow], hh(s.h), hh(endOf(dow, s.h)), s.cap, s.v, s.p, s.r, s.f, s.v ? nf(s.p / s.v * 100, 0) + '%' : '', (s.c || '').replace(/[\t\r\n]+/g, ' ')].join('\t'));
+      });
+    }
+    if (lines.length === 1) { toast('Não há lançamentos nos últimos 60 dias.'); return; }
+    copyText(lines.join('\n'), 'Tabela copiada. Cole na planilha.');
+    return;
+  }
+  if (e.target.id === 'importOld') {
+    const b = e.target;
+    if (!b.classList.contains('armed')) { b.classList.add('armed'); b.textContent = 'Confirmar importação'; setTimeout(() => { if (b.isConnected) { b.classList.remove('armed'); b.textContent = 'Importar para os dados compartilhados'; } }, 4000); return; }
+    const leg = legacyDays() || {}; let n = 0;
+    b.disabled = true; b.textContent = 'Importando…';
+    try {
+      for (const k of Object.keys(leg)) { if (!S.days[k]) { await persistDay(k, leg[k]); n++; } }
+      ls.set(LSI, '1'); toast(n + (n === 1 ? ' dia importado.' : ' dias importados.')); renderAll();
+    } catch (er) { toast(errMsg(er)); renderAll(); }
+  }
+});
+form.addEventListener('input', e => {
+  if (e.target.id === 'fObs' && D) { D.obs = e.target.value; scheduleSave(); return; }
+  if (D && e.target.matches('#fillForm [data-m]')) { onField(e.target, false); return; }
+  const map = { metaIn: 'meta', capSemIn: 'capSem', capSabIn: 'capSab', tolIn: 'tol' }, k = map[e.target.id];
+  if (k) {
+    const v = Math.round(Number(e.target.value)); if (!okNum(k, v)) return;
+    clearTimeout(cfgTimers[k]); cfgTimers[k] = setTimeout(() => { persistCfg(k, v).then(() => toast('Ajuste salvo.')).catch(er => toast(errMsg(er))); }, 600);
+    return;
+  }
+  if (e.target.id === 'escolaIn') {
+    const v = e.target.value.slice(0, 60);
+    clearTimeout(cfgTimers.escola); cfgTimers.escola = setTimeout(() => { persistCfg('escola', v.trim()).then(() => { paintBrand(); }).catch(er => toast(errMsg(er))); }, 700);
+  }
+});
+form.addEventListener('change', async e => {
+  if (e.target.id === 'fDate') { if (e.target.value) gotoDate(e.target.value); else e.target.value = D.date; return; }
+  if (e.target.id === 'fOff' && D) { D.off = e.target.checked; $('#qlist').hidden = D.off; paintTotals(); scheduleSave(); return; }
+  if (D && e.target.matches('#fillForm .qs input, #fillForm [data-m="n"]')) { onField(e.target, true); return; }
+  if (e.target.id === 'logoIn' && e.target.files[0]) {
+    try { const img = await resizeLogo(e.target.files[0]); await persistLogo(img); paintBrand(); renderSettings(); toast('Logo atualizado.'); }
+    catch (er) { toast(er && er.message === 'grande' ? 'A imagem ficou grande demais. Use um arquivo mais simples.' : (er && er.code ? errMsg(er) : 'Não consegui ler essa imagem.')); }
+  }
+});
+form.addEventListener('focusin', e => { if (e.target.matches('.qs input')) e.target.select(); });
+form.addEventListener('mousedown', e => {
+  const c = e.target.closest('[data-nm]'); if (!c || !D) return;
+  e.preventDefault();
+  const inp = c.closest('.field').querySelector('[data-m="n"]'), v = inp.value, i = Math.max(v.lastIndexOf(','), v.lastIndexOf(';'));
+  inp.value = v.slice(0, i + 1) + (i >= 0 ? ' ' : '') + c.dataset.nm + ', ';
+  onField(inp, false); inp.focus();
+});
+form.addEventListener('keydown', e => {
+  if (e.key !== 'Enter' || !e.target.matches('#fillForm .qf input')) return;
+  e.preventDefault();
+  const all = Array.from(document.querySelectorAll('#fillForm .qf.v input, #fillForm .qf.p input, #fillForm .qf.r input')).filter(i => i.offsetParent !== null);
+  const order = all.sort((a, b) => (a.compareDocumentPosition(b) & 4) ? -1 : 1), i = order.indexOf(e.target);
+  const nx = order[i + 1]; if (nx) nx.focus();
+});
+const cfgTimers = {};
+
+document.addEventListener('click', e => {
+  const fl = e.target.closest('[data-fill]');
+  if (fl) { openDay(fl.dataset.fill || null); return; }
+  const rg = e.target.closest('[data-range]'); if (rg) { S.range = rg.dataset.range; renderDash(); return; }
+  const ht = e.target.closest('[data-heat]'); if (ht) { S.heat = ht.dataset.heat; renderDash(); return; }
+  if (e.target.id === 'demoOn') { S.demoDays = makeDemo(); S.demo = true; renderDash(); return; }
+  if (e.target.id === 'demoOff') { S.demo = false; renderDash(); return; }
+  const av = e.target.closest('[data-aviso]'); if (av) { markAviso(av.dataset.aviso); return; }
+  if (e.target.id === 'copyCall') { const L = callList(); if (L.length) copyText(L.map(x => x.name + ' (' + x.n + ' faltas)').join('\n'), 'Lista copiada.'); return; }
+  if (e.target.id === 'copyMonth') { const t = monthText(); if (!t) { toast('Ainda não há lançamentos neste mês.'); return; } copyText(t, 'Resumo copiado.'); return; }
+  const tb = e.target.closest('[data-tab]'); if (tb) { setTab(tb.dataset.tab, true); return; }
+});
+$('#hdrFill').addEventListener('click', () => openDay(null));
+window.addEventListener('hashchange', () => { const h = location.hash.slice(1); if ((h === 'dashboards' || h === 'preencher') && h !== S.tab) setTab(h, false); });
+document.addEventListener('visibilitychange', () => { if (document.hidden) flushSave(); });
+window.addEventListener('pagehide', () => { flushSave(); });
+
+async function copyText(text, okMsg) {
+  try { await navigator.clipboard.writeText(text); toast(okMsg); }
+  catch (er) {
+    let out = $('#xlsOut');
+    if (!out) { out = document.createElement('textarea'); out.id = 'xlsOut'; out.className = 'out'; out.readOnly = true; $('#view-dash').appendChild(out); }
+    out.hidden = false; out.value = text; out.focus(); out.select();
+    toast('O navegador bloqueou a cópia. Selecione o texto e copie com Ctrl+C.');
+  }
+}
+
+/* dicas flutuantes dos gráficos */
+const tip = $('#tip');
+function placeTip(x, y) {
+  const r = tip.getBoundingClientRect(); let l = x + 14, t = y - r.height - 12;
+  if (l + r.width > innerWidth - 8) l = x - r.width - 14;
+  if (l < 8) l = 8; if (t < 8) t = y + 18;
+  tip.style.left = l + 'px'; tip.style.top = t + 'px';
+}
+function onPointer(e) {
+  const t = e.target.closest && e.target.closest('[data-tip]');
+  if (!t) { tip.hidden = true; return; }
+  tip.textContent = t.getAttribute('data-tip'); tip.hidden = false; placeTip(e.clientX, e.clientY);
+}
+document.addEventListener('pointermove', onPointer);
+document.addEventListener('pointerdown', onPointer);
+document.addEventListener('scroll', () => { tip.hidden = true; }, true);
+let rz = null;
+window.addEventListener('resize', () => { cancelAnimationFrame(rz); rz = requestAnimationFrame(redrawCharts); });
+
+let toastT = null;
+function toast(msg) {
+  $('#toastMsg').textContent = msg; $('#toast').classList.add('show');
+  clearTimeout(toastT); toastT = setTimeout(() => $('#toast').classList.remove('show'), 4200);
+}
+
+{ const h = (location.hash || '').slice(1); if (h === 'preencher') S.tab = 'preencher'; }
+$('#view-dash').hidden = S.tab !== 'dashboards'; $('#view-fill').hidden = S.tab !== 'preencher';
+$('#tab-dashboards').setAttribute('aria-selected', String(S.tab === 'dashboards'));
+$('#tab-preencher').setAttribute('aria-selected', String(S.tab === 'preencher'));
+init();
+setInterval(() => { if (S.tab === 'dashboards' && S.loaded && !S.err) { renderDash(); } else if (S.tab === 'preencher' && D && !formFocused() && !D.touched) { renderFill(); } }, 60000);
+})();
+</script>
+
+</body></html>
